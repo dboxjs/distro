@@ -2,16 +2,16 @@ import * as d3 from 'd3';
 
 import makeDistroChart from './distrochart';
 
-/* Simple Violin example
- * Single and multiline Violins
+/* Simple Distro example
+ * Single and multiline Distros
  */
 export default function(config, helper) {
 
   var parseDate = d3.timeParse('%Y-%m-%d');
 
-  var Violin = Object.create(helper);
+  var Distro = Object.create(helper);
 
-  Violin.init = function(config){
+  Distro.init = function(config){
     var vm = this;
     vm._config = config ? config : {};
     vm._data = [];
@@ -34,26 +34,26 @@ export default function(config, helper) {
 
   //-------------------------------
   //User config functions
-  Violin.x = function(col){
+  Distro.x = function(col){
     var vm = this;
     vm._config.x = col;
     return vm;
   }
 
-  Violin.y = function(col){
+  Distro.y = function(col){
     var vm = this;
     vm._config.y = col;
     return vm;
   }
 
 
-  Violin.fill = function(col){
+  Distro.fill = function(col){
     var vm = this;
     vm._config.fill = col;
     return vm;
   }
 
-  Violin.colors = function(colors) {
+  Distro.colors = function(colors) {
     var vm = this;
     if(Array.isArray(colors)) {
       //Using an array of colors for the range 
@@ -65,7 +65,7 @@ export default function(config, helper) {
     return vm;
   }
 
-  Violin.tip = function (tip) {
+  Distro.tip = function (tip) {
     var vm = this;
     vm._config.tip = tip;
     vm._tip.html(vm._config.tip);
@@ -74,7 +74,7 @@ export default function(config, helper) {
 
   //-------------------------------
   //Triggered by the chart.js;
-  Violin.data = function(data){
+  Distro.data = function(data){
     var vm = this;
     
     vm._data = [];
@@ -92,7 +92,7 @@ export default function(config, helper) {
     return vm;
   }
 
-  Violin.scales = function(){
+  Distro.scales = function(){
     var vm = this;
 
 
@@ -101,7 +101,7 @@ export default function(config, helper) {
   }
 
 
-  Violin.draw = function(){
+  Distro.draw = function(){
     var vm = this;
     //Call the tip
     //vm.chart.svg().call(vm._tip);
@@ -118,46 +118,46 @@ export default function(config, helper) {
     chart1.renderBoxPlot();
     chart1.renderDataPlots();
     chart1.renderNotchBoxes({showNotchBox:false});
-    chart1.renderViolinPlot({showViolinPlot:false});
+    chart1.renderDistroPlot({showDistroPlot:false});
     
     //Box Plot
-    /* chart1.violinPlots.hide();
+    /* chart1.DistroPlots.hide();
     chart1.boxPlots.show({reset:true});
     chart1.notchBoxes.hide();
     chart1.dataPlots.change({showPlot:false,showBeanLines:false});  */
 
     //Notched Box Plot
-   /*  chart1.violinPlots.hide();
+   /*  chart1.DistroPlots.hide();
     chart1.notchBoxes.show({reset:true});
     chart1.boxPlots.show({reset:true, showBox:false,showOutliers:true,boxWidth:20,scatterOutliers:true});
     chart1.dataPlots.change({showPlot:false,showBeanLines:false}); */
 
-    //Violin Plot Unbound
-    /* chart1.violinPlots.show({reset:true,clamp:0});
+    //Distro Plot Unbound
+    /* chart1.DistroPlots.show({reset:true,clamp:0});
     chart1.boxPlots.show({reset:true, showWhiskers:false,showOutliers:false,boxWidth:10,lineWidth:15,colors:['#555']});
     chart1.notchBoxes.hide();
     chart1.dataPlots.change({showPlot:false,showBeanLines:false})  */
 
-    //Violin Plot Clamp to Data
-    /* chart1.violinPlots.show({reset:true,clamp:1});
+    //Distro Plot Clamp to Data
+    /* chart1.DistroPlots.show({reset:true,clamp:1});
     chart1.boxPlots.show({reset:true, showWhiskers:false,showOutliers:false,boxWidth:10,lineWidth:15,colors:['#555']});
     chart1.notchBoxes.hide();
     chart1.dataPlots.change({showPlot:false,showBeanLines:false}); */
 
     //Bean Plot
-    /* chart1.violinPlots.show({reset:true, width:75, clamp:0, resolution:30, bandwidth:50});
+    /* chart1.DistroPlots.show({reset:true, width:75, clamp:0, resolution:30, bandwidth:50});
     chart1.dataPlots.show({showBeanLines:true,beanWidth:15,showPlot:false,colors:['#555']});
     chart1.boxPlots.hide();
     chart1.notchBoxes.hide(); */
 
     //Beeswarm Plot
-    /* chart1.violinPlots.hide();
+    /* chart1.DistroPlots.hide();
     chart1.dataPlots.show({showPlot:true, plotType:'beeswarm',showBeanLines:false, colors:null});
     chart1.notchBoxes.hide();
     chart1.boxPlots.hide(); */
     
     //Scatter Plot
-    chart1.violinPlots.hide();
+    chart1.DistroPlots.hide();
     chart1.dataPlots.show({showPlot:true, plotType:40, showBeanLines:false,colors:null});
     chart1.notchBoxes.hide();
     chart1.boxPlots.hide();
@@ -173,6 +173,6 @@ export default function(config, helper) {
     return vm;
   }
 
-  Violin.init(config);
-  return Violin;
+  Distro.init(config);
+  return Distro;
 }
