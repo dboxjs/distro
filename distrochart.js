@@ -1,3 +1,4 @@
+import * as d3 from 'd3';
 /**
  * @fileOverview A D3 based distribution chart system. Supports: Box plots, Violin plots, Notched box plots, trend lines, beeswarm plot
  * @version 3.0
@@ -19,7 +20,7 @@
  * @param [settings.constrainExtremes=false] Should the y scale include outliers?
  * @returns {object} chart A chart object
  */
-function makeDistroChart(settings) {
+export default function makeDistroChart(settings) {
 
     var chart = {};
 
@@ -35,7 +36,7 @@ function makeDistroChart(settings) {
         chartSize: {width: 800, height: 400},
         margin: {top: 15, right: 60, bottom: 40, left: 50},
         constrainExtremes: false,
-        color: d3.scale.category10()
+        color: d3.scaleOrdinal(d3.schemeCategory10)
     };
     for (var setting in settings) {
         chart.settings[setting] = settings[setting]
@@ -87,7 +88,7 @@ function makeDistroChart(settings) {
                 return colorOptions[group];
             }
         } else {
-            return d3.scale.category10();
+            return d3.scaleOrdinal(d3.schemeCategory10);
         }
     }
 
@@ -99,10 +100,10 @@ function makeDistroChart(settings) {
      */
     function getObjWidth(objWidth, gName) {
         var objSize = {left: null, right: null, middle: null};
-        var width = chart.xScale.rangeBand() * (objWidth / 100);
-        var padding = (chart.xScale.rangeBand() - width) / 2;
+        var width = chart.xScale.bandwidth() * (objWidth / 100);
+        var padding = (chart.xScale.bandwidth() - width) / 2;
         var gShift = chart.xScale(gName);
-        objSize.middle = chart.xScale.rangeBand() / 2 + gShift;
+        objSize.middle = chart.xScale.bandwidth() / 2 + gShift;
         objSize.left = padding + gShift;
         objSize.right = objSize.left + width;
         return objSize;
@@ -252,10 +253,10 @@ function makeDistroChart(settings) {
         }
 
         if (chart.settings.scale === 'log') {
-            chart.yScale = d3.scale.log();
+            chart.yScale = d3.scaleLog();
             chart.yFormatter = logFormatNumber;
         } else {
-            chart.yScale = d3.scale.linear();
+            chart.yScale = d3.scaleLinear();
         }
 
         if (chart.settings.constrainExtremes === true) {
@@ -274,17 +275,17 @@ function makeDistroChart(settings) {
 
         // Build Scale functions
         chart.yScale.range([chart.height, 0]).domain(chart.range).nice().clamp(true);
-        chart.xScale = d3.scale.ordinal().domain(Object.keys(chart.groupObjs)).rangeBands([0, chart.width]);
+        chart.xScale = d3.scaleBand().domain(Object.keys(chart.groupObjs)).rangeRound([0, chart.width]);
 
         //Build Axes Functions
-        chart.objs.yAxis = d3.svg.axis()
+        /* chart.objs.yAxis = d3.svg.axis()
             .scale(chart.yScale)
             .orient("left")
             .tickFormat(chart.yFormatter)
             .outerTickSize(0)
             .innerTickSize(-chart.width + (chart.margin.right + chart.margin.left));
         chart.objs.yAxis.ticks(chart.objs.yAxis.ticks()*chart.settings.yTicks);
-        chart.objs.xAxis = d3.svg.axis().scale(chart.xScale).orient("bottom").tickSize(5);
+        chart.objs.xAxis = d3.svg.axis().scale(chart.xScale).orient("bottom").tickSize(5); */
     }();
 
     /**
@@ -297,7 +298,7 @@ function makeDistroChart(settings) {
         chart.height = parseInt(chart.objs.chartDiv.style("height"), 10) - (chart.margin.top + chart.margin.bottom);
 
         // Update scale functions
-        chart.xScale.rangeBands([0, chart.width]);
+        chart.xScale.rangeRound([0, chart.width]);
         chart.yScale.range([chart.height, 0]);
 
         // Update the yDomain if the Violin plot clamp is set to -1 meaning it will extend the violins to make nice points
@@ -308,7 +309,7 @@ function makeDistroChart(settings) {
         }
 
         //Update axes
-        chart.objs.g.select('.x.axis').attr("transform", "translate(0," + chart.height + ")").call(chart.objs.xAxis)
+        /* chart.objs.g.select('.x.axis').attr("transform", "translate(0," + chart.height + ")").call(chart.objs.xAxis)
             .selectAll("text")
             .attr("y", 5)
             .attr("x", -5)
@@ -316,7 +317,7 @@ function makeDistroChart(settings) {
             .style("text-anchor", "end");
         chart.objs.g.select('.x.axis .label').attr("x", chart.width / 2);
         chart.objs.g.select('.y.axis').call(chart.objs.yAxis.innerTickSize(-chart.width));
-        chart.objs.g.select('.y.axis .label').attr("x", -chart.height / 2);
+        chart.objs.g.select('.y.axis .label').attr("x", -chart.height / 2); */
         chart.objs.chartDiv.select('svg').attr("width", chart.width + (chart.margin.left + chart.margin.right)).attr("height", chart.height + (chart.margin.top + chart.margin.bottom));
 
         return chart;
@@ -349,7 +350,7 @@ function makeDistroChart(settings) {
             .attr("transform", "translate(" + chart.margin.left + "," + chart.margin.top + ")");
 
         // Create axes
-        chart.objs.axes = chart.objs.g.append("g").attr("class", "axis");
+        /* chart.objs.axes = chart.objs.g.append("g").attr("class", "axis");
         chart.objs.axes.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + chart.height + ")")
@@ -364,7 +365,7 @@ function makeDistroChart(settings) {
             .attr("x", -chart.height / 2)
             .attr("dy", ".71em")
             .style("text-anchor", "middle")
-            .text(chart.yAxisLable);
+            .text(chart.yAxisLable); */
 
         // Create tooltip div
         chart.objs.tooltip = chart.objs.mainDiv.append('div').attr('class', 'tooltip');
@@ -389,7 +390,7 @@ function makeDistroChart(settings) {
      * @param [options.resolution=100 default]
      * @param [options.bandwidth=10 default] May need higher bandwidth for larger data sets
      * @param [options.width=50] The max percent of the group rangeBand that the violin can be
-     * @param [options.interpolation=''] How to render the violin
+     * @param [options.curve=''] How to render the violin
      * @param [options.clamp=0 default]
      *   0 = keep data within chart min and max, clamp once data = 0. May extend beyond data set min and max
      *   1 = clamp at min and max of data set. Possibly no tails
@@ -406,7 +407,7 @@ function makeDistroChart(settings) {
             resolution: 100,
             bandwidth: 20,
             width: 50,
-            interpolation: 'cardinal',
+            curve: d3.curveCardinal,
             clamp: 1,
             colors: chart.colorFunct,
             _yDomainVP: null // If the Violin plot is set to close all violin plots, it may need to extend the domain, that extended domain is stored here
@@ -570,19 +571,19 @@ function makeDistroChart(settings) {
                 var objBounds = getObjWidth(vOpts.width, cName);
                 var width = (objBounds.right - objBounds.left) / 2;
 
-                var yVScale = d3.scale.linear()
+                var yVScale = d3.scaleLinear()
                     .range([width, 0])
                     .domain([0, d3.max(cViolinPlot.kdedata, function (d) {return d.y;})])
                     .clamp(true);
 
-                var area = d3.svg.area()
-                    .interpolate(vOpts.interpolation)
+                var area = d3.area()
+                    .curve(vOpts.curve)
                     .x(function (d) {return xVScale(d.x);})
                     .y0(width)
                     .y1(function (d) {return yVScale(d.y);});
 
-                var line = d3.svg.line()
-                    .interpolate(vOpts.interpolation)
+                var line = d3.line()
+                    .curve(vOpts.curve)
                     .x(function (d) {return xVScale(d.x);})
                     .y(function (d) {return yVScale(d.y)});
 
@@ -1371,7 +1372,7 @@ function makeDistroChart(settings) {
 
             // Metrics lines
             if (chart.dataPlots.objs.g) {
-                var halfBand = chart.xScale.rangeBand() / 2; // find the middle of each band
+                var halfBand = chart.xScale.bandwidth() / 2; // find the middle of each band
                 for (var cMetric in chart.dataPlots.objs.lines) {
                     chart.dataPlots.objs.lines[cMetric].line
                         .x(function (d) {
@@ -1395,7 +1396,7 @@ function makeDistroChart(settings) {
                             .range([Math.floor(chart.yScale.range()[0] / dOpts.pointSize), 0])
                             .interpolate(d3.interpolateRound)
                             .domain(chart.yScale.domain());
-                        var maxWidth = Math.floor(chart.xScale.rangeBand() / dOpts.pointSize);
+                        var maxWidth = Math.floor(chart.xScale.bandwidth() / dOpts.pointSize);
                         var ptsObj = {};
                         var cYBucket = null;
                         //  Bucket points
@@ -1483,8 +1484,8 @@ function makeDistroChart(settings) {
                             y: chart.groupObjs[cGroup].metrics[cMetric]
                         })
                     }
-                    chart.dataPlots.objs.lines[cMetric].line = d3.svg.line()
-                        .interpolate("cardinal")
+                    chart.dataPlots.objs.lines[cMetric].line = d3.line()
+                        .curve(d3.curveCardinal)
                         .y(function (d) {
                             return chart.yScale(d.y)
                         });
