@@ -26,34 +26,34 @@ export default function makeDistroChart(settings) {
 
     // Defaults
     chart.settings = {
-        data: null,
-        xName: null,
-        yName: null,
-        selector: null,
-        axisLables: null,
-        yTicks: 1,
-        scale: 'linear',
-        chartSize: {width: 800, height: 400},
-        margin: {top: 15, right: 60, bottom: 40, left: 50},
-        constrainExtremes: false,
-        color: d3.scaleOrdinal(d3.schemeCategory10)
+      data: null,
+      xName: null,
+      yName: null,
+      selector: null,
+      axisLables: null,
+      yTicks: 1,
+      scale: 'linear',
+      chartSize: {width: 800, height: 400},
+      margin: {top: 15, right: 60, bottom: 40, left: 50},
+      constrainExtremes: false,
+      color: d3.scaleOrdinal(d3.schemeCategory10)
     };
     for (var setting in settings) {
-        chart.settings[setting] = settings[setting]
+      chart.settings[setting] = settings[setting]
     }
 
 
     function formatAsFloat(d) {
-        if (d % 1 !== 0) {
-            return d3.format(".2f")(d);
-        } else {
-            return d3.format(".0f")(d);
-        }
+      if (d % 1 !== 0) {
+        return d3.format(".2f")(d);
+      } else {
+        return d3.format(".0f")(d);
+      }
     }
 
     function logFormatNumber(d) {
-        var x = Math.log(d) / Math.log(10) + 1e-6;
-        return Math.abs(x - Math.floor(x)) < 0.6 ? formatAsFloat(d) : "";
+      var x = Math.log(d) / Math.log(10) + 1e-6;
+      return Math.abs(x - Math.floor(x)) < 0.6 ? formatAsFloat(d) : "";
     }
 
     chart.yFormatter = formatAsFloat;
@@ -278,14 +278,13 @@ export default function makeDistroChart(settings) {
         chart.xScale = d3.scaleBand().domain(Object.keys(chart.groupObjs)).rangeRound([0, chart.width]);
 
         //Build Axes Functions
-        /* chart.objs.yAxis = d3.svg.axis()
+        chart.objs.yAxis = d3.axisLeft()
             .scale(chart.yScale)
-            .orient("left")
             .tickFormat(chart.yFormatter)
-            .outerTickSize(0)
-            .innerTickSize(-chart.width + (chart.margin.right + chart.margin.left));
-        chart.objs.yAxis.ticks(chart.objs.yAxis.ticks()*chart.settings.yTicks);
-        chart.objs.xAxis = d3.svg.axis().scale(chart.xScale).orient("bottom").tickSize(5); */
+            .tickSizeOuter(0)
+            .tickSizeInner(-chart.width + (chart.margin.right + chart.margin.left));
+        //chart.objs.yAxis.ticks(chart.objs.yAxis.ticks()*chart.settings.yTicks);
+        chart.objs.xAxis = d3.axisBottom().scale(chart.xScale).tickSize(5); 
     }();
 
     /**
@@ -309,15 +308,15 @@ export default function makeDistroChart(settings) {
         }
 
         //Update axes
-        /* chart.objs.g.select('.x.axis').attr("transform", "translate(0," + chart.height + ")").call(chart.objs.xAxis)
+        chart.objs.g.select('.x.axis').attr("transform", "translate(0," + chart.height + ")").call(chart.objs.xAxis)
             .selectAll("text")
             .attr("y", 5)
             .attr("x", -5)
             .attr("transform", "rotate(-45)")
             .style("text-anchor", "end");
         chart.objs.g.select('.x.axis .label').attr("x", chart.width / 2);
-        chart.objs.g.select('.y.axis').call(chart.objs.yAxis.innerTickSize(-chart.width));
-        chart.objs.g.select('.y.axis .label').attr("x", -chart.height / 2); */
+        chart.objs.g.select('.y.axis').call(chart.objs.yAxis.tickSizeInner(-chart.width));
+        chart.objs.g.select('.y.axis .label').attr("x", -chart.height / 2);
         chart.objs.chartDiv.select('svg').attr("width", chart.width + (chart.margin.left + chart.margin.right)).attr("height", chart.height + (chart.margin.top + chart.margin.bottom));
 
         return chart;
@@ -327,60 +326,62 @@ export default function makeDistroChart(settings) {
      * Prepare the chart html elements
      */
     !function prepareChart() {
-        // Build main div and chart div
-        chart.objs.mainDiv = d3.select(chart.settings.selector)
-            .style("max-width", chart.divWidth + "px");
-        // Add all the divs to make it centered and responsive
-        chart.objs.mainDiv.append("div")
-            .attr("class", "inner-wrapper")
-            .style("padding-bottom", (chart.divHeight / chart.divWidth) * 100 + "%")
-            .append("div").attr("class", "outer-box")
-            .append("div").attr("class", "inner-box");
-        // Capture the inner div for the chart (where the chart actually is)
-        chart.selector = chart.settings.selector + " .inner-box";
-        chart.objs.chartDiv = d3.select(chart.selector);
-        d3.select(window).on('resize.' + chart.selector, chart.update);
+      // Build main div and chart div
+      chart.objs.mainDiv = d3.select(chart.settings.selector)
+        .style("width", chart.divWidth + "px")
+        .style("height", chart.divHeight+ "px");
+      // Add all the divs to make it centered and responsive
+      chart.objs.mainDiv.append("div")
+        .attr("class", "inner-wrapper")
+        .style("padding-bottom", (chart.divHeight / chart.divWidth) * 100 + "%")
+        .append("div").attr("class", "outer-box")
+        .append("div").attr("class", "inner-box");
+      // Capture the inner div for the chart (where the chart actually is)
+      chart.selector = chart.settings.selector + " .inner-box";   
+      chart.objs.chartDiv = d3.select(chart.selector);
+      d3.select(window).on('resize.' + chart.selector, chart.update);
 
-        // Create the svg
-        chart.objs.g = chart.objs.chartDiv.append("svg")
-            .attr("class", "chart-area")
-            .attr("width", chart.width + (chart.margin.left + chart.margin.right))
-            .attr("height", chart.height + (chart.margin.top + chart.margin.bottom))
-            .append("g")
-            .attr("transform", "translate(" + chart.margin.left + "," + chart.margin.top + ")");
+      // Create the svg
+      chart.objs.g = chart.objs.chartDiv.append("svg")
+        .attr("class", "chart-area")
+        .attr("width", chart.width + (chart.margin.left + chart.margin.right))
+        .attr("height", chart.height + (chart.margin.top + chart.margin.bottom))
+        .append("g")
+        .attr("transform", "translate(" + chart.margin.left + "," + chart.margin.top + ")");
+      
+      // Create axes
+      chart.objs.axes = chart.objs.g.append("g").attr("class", "axis");
+      chart.objs.axes.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + chart.height + ")")
+          .call(chart.objs.xAxis);
 
-        // Create axes
-        /* chart.objs.axes = chart.objs.g.append("g").attr("class", "axis");
-        chart.objs.axes.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + chart.height + ")")
-            .call(chart.objs.xAxis);
-        chart.objs.axes.append("g")
-            .attr("class", "y axis")
-            .call(chart.objs.yAxis)
-            .append("text")
-            .attr("class", "label")
-            .attr("transform", "rotate(-90)")
-            .attr("y", -42)
-            .attr("x", -chart.height / 2)
-            .attr("dy", ".71em")
-            .style("text-anchor", "middle")
-            .text(chart.yAxisLable); */
+      chart.objs.axes.append("g")
+          .attr("class", "y axis")
+          .call(chart.objs.yAxis)
+          .append("text")
+          .attr("class", "label")
+          .attr("transform", "rotate(-90)")
+          .attr("y", -42)
+          .attr("x", -chart.height / 2)
+          .attr("dy", ".71em")
+          .style("text-anchor", "middle")
+          .text(chart.yAxisLable);
 
-        // Create tooltip div
-        chart.objs.tooltip = chart.objs.mainDiv.append('div').attr('class', 'tooltip');
-        for (var cName in chart.groupObjs) {
-            chart.groupObjs[cName].g = chart.objs.g.append("g").attr("class", "group");
-            chart.groupObjs[cName].g.on("mouseover", function () {
-                chart.objs.tooltip
-                    .style("display", null)
-                    .style("left", (d3.event.pageX) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
-            }).on("mouseout", function () {
-                chart.objs.tooltip.style("display", "none");
-            }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics))
-        }
-        chart.update();
+      // Create tooltip div
+      chart.objs.tooltip = chart.objs.mainDiv.append('div').attr('class', 'tooltip');
+      for (var cName in chart.groupObjs) {
+          chart.groupObjs[cName].g = chart.objs.g.append("g").attr("class", "group");
+          chart.groupObjs[cName].g.on("mouseover", function () {
+              chart.objs.tooltip
+                  .style("display", null)
+                  .style("left", (d3.event.pageX) + "px")
+                  .style("top", (d3.event.pageY - 28) + "px");
+          }).on("mouseout", function () {
+              chart.objs.tooltip.style("display", "none");
+          }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics))
+      }
+      chart.update();
     }();
 
     /**
