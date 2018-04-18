@@ -134,8 +134,11 @@ export default function(config, helper) {
     chart1.renderBoxPlot();
     chart1.renderDataPlots();
     chart1.renderNotchBoxes({showNotchBox:false});
-    chart1.renderViolinPlot({showViolinPlot:true}); 
+    chart1.renderViolinPlot({showViolinPlot:false}); 
     
+    chart1.boxPlots.show({reset:true, showWhiskers:false,showOutliers:false, showMean:true, showMedian:false, showBox:false});
+    chart1.dataPlots.change({showPlot:true}); 
+    chart1.violinPlots.show({reset:true,clamp:0, widht:100});
     //Box Plot
     /* chart1.violinPlots.hide();
     chart1.boxPlots.show({reset:true});

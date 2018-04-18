@@ -140,10 +140,10 @@ export default function makeDistroChart(settings) {
      * @returns {Function} A function that provides the values for the tooltip
      */
     function tooltipHover(groupName, metrics) {
-        var tooltipString = "Group: " + groupName;
+        var tooltipString = groupName;
         tooltipString += "<br\>Max: " + formatAsFloat(metrics.max, 0.1);
         tooltipString += "<br\>Q3: " + formatAsFloat(metrics.quartile3);
-        tooltipString += "<br\>Median: " + formatAsFloat(metrics.median);
+        tooltipString += "<br\>Mediana: " + formatAsFloat(metrics.median);
         tooltipString += "<br\>Q1: " + formatAsFloat(metrics.quartile1);
         tooltipString += "<br\>Min: " + formatAsFloat(metrics.min);
         return function () {
