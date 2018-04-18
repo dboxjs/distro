@@ -28,6 +28,7 @@ export default function makeDistroChart(settings) {
     chart.settings = {
       data: null,
       xName: null,
+      xSort:null,
       yName: null,
       selector: null,
       axisLables: null,
@@ -237,6 +238,7 @@ export default function makeDistroChart(settings) {
      * Prepare the chart settings and chart div and svg
      */
     !function prepareSettings() {
+        var domain = ''; 
         //Set base settings
         chart.margin = chart.settings.margin;
         chart.divWidth = chart.settings.chartSize.width;
@@ -275,7 +277,13 @@ export default function makeDistroChart(settings) {
 
         // Build Scale functions
         chart.yScale.range([chart.height, 0]).domain(chart.range).nice().clamp(true);
-        chart.xScale = d3.scaleBand().domain(Object.keys(chart.groupObjs)).rangeRound([0, chart.width]);
+        
+        if (chart.settings.xSort === null) {
+            domain = Object.keys(chart.groupObjs)
+        } else {
+            domain = Array.isArray(chart.settings.xSort) ? chart.settings.xSort : Object.keys(chart.groupObjs).sort(d3.ascending)
+        }
+        chart.xScale = d3.scaleBand().domain(domain).rangeRound([0, chart.width]);
 
         //Build Axes Functions
         chart.objs.yAxis = d3.axisLeft()
@@ -295,7 +303,6 @@ export default function makeDistroChart(settings) {
         // Update chart size based on view port size
         chart.width = parseInt(chart.objs.chartDiv.style("width"), 10) - (chart.margin.left + chart.margin.right);
         chart.height = parseInt(chart.objs.chartDiv.style("height"), 10) - (chart.margin.top + chart.margin.bottom);
-
         // Update scale functions
         chart.xScale.rangeRound([0, chart.width]);
         chart.yScale.range([chart.height, 0]);
@@ -333,7 +340,8 @@ export default function makeDistroChart(settings) {
       // Add all the divs to make it centered and responsive
       chart.objs.mainDiv.append("div")
         .attr("class", "inner-wrapper")
-        .style("padding-bottom", (chart.divHeight / chart.divWidth) * 100 + "%")
+        .style("padding-bottom", "5%")
+        .style("height", chart.divHeight + "px")
         .append("div").attr("class", "outer-box")
         .append("div").attr("class", "inner-box");
       // Capture the inner div for the chart (where the chart actually is)
