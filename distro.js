@@ -127,7 +127,7 @@ export default function(config, helper) {
         yName:'y',
         axisLabels: {xAxis: null, yAxis: null},
         selector:"#distro",
-        chartSize:{height:460, width:960},
+        chartSize:{height:vm._config.size.height, width:vm._config.size.width},
         margin:{top: 25, right: 20, bottom: 120, left: 80},
         constrainExtremes:true});
 
