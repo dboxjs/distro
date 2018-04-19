@@ -381,9 +381,10 @@ export default function makeDistroChart(settings) {
           .append("text")
           .attr("class", "label")
           .attr("transform", "rotate(-90)")
-          .attr("y", -42)
+          .attr("y", -chart.margin.left * 0.8)
           .attr("x", -chart.height / 2)
           .attr("dy", ".71em")
+          .attr('fill', '#fff')
           .style("text-anchor", "middle")
           .text(chart.yAxisLable);
 

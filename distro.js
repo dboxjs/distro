@@ -125,7 +125,7 @@ export default function(config, helper) {
         xName:'x',
         xSort: typeof vm._config.sortBy === 'object' &&  vm._config.sortBy.x ? vm._config.sortBy.x : null, 
         yName:'y',
-        axisLabels: {xAxis: null, yAxis: null},
+        axisLabels: {xAxis: vm._config.axisLabels.xAxis, yAxis: vm._config.axisLabels.yAxis},
         selector:"#distro",
         colors:['#fff', '#f3e2b7', '#afda61', '#406940'],
         chartSize:{height:vm._config.size.height, width:vm._config.size.width},
