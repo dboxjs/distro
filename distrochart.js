@@ -327,7 +327,7 @@ export default function makeDistroChart(settings) {
 
         //Update axes
         chart.objs.g.select('.x.axis').attr("transform", "translate(0," + chart.height + ")").call(chart.objs.xAxis)
-            .selectAll("text")
+            .selectAll(".tick text")
             .attr("y", 5)
             .attr("x", -5)
             .attr("transform", "rotate(-45)")
@@ -373,7 +373,15 @@ export default function makeDistroChart(settings) {
       chart.objs.axes.append("g")
           .attr("class", "x axis")
           .attr("transform", "translate(0," + chart.height + ")")
-          .call(chart.objs.xAxis);
+          .call(chart.objs.xAxis)
+          .append("text")
+          .attr("class", "label")
+          .attr("y", 40)
+          .attr("x", -chart.width / 2)
+          .attr("dy", ".71em")
+          .attr('fill', '#fff')
+          .style("text-anchor", "middle")
+          .text(chart.xAxisLable);
 
       chart.objs.axes.append("g")
           .attr("class", "y axis")
