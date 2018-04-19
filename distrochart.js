@@ -76,9 +76,20 @@ export default function makeDistroChart(settings) {
         } else if (Array.isArray(colorOptions)) {
             //  If an array is provided, map it to the domain
             var colorMap = {}, cColor = 0;
+            /* @TODO - REVIEW PREVIOUS CODE 
             for (var cName in chart.groupObjs) {
+                debugger;
                 colorMap[cName] = colorOptions[cColor];
                 cColor = (cColor + 1) % colorOptions.length;
+            }*/
+            if (Array.isArray(chart.settings.xSort)){
+                chart.settings.xSort.forEach(function(key, index){
+                    colorMap[key] = colorOptions[index];
+                })
+            }else{
+                Object.keys(chart.groupObjs).sort(d3.ascending).forEach(function(key, index){
+                    colorMap[key] = colorOptions[index];
+                })
             }
             return function (group) {
                 return colorMap[group];
@@ -1467,7 +1478,7 @@ export default function makeDistroChart(settings) {
          */
         chart.dataPlots.preparePlots = function () {
             var cName, cPlot;
-
+            
             if (dOpts && dOpts.colors) {
                 chart.dataPlots.colorFunct = getColorFunct(dOpts.colors);
             } else {

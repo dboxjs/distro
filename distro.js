@@ -127,6 +127,7 @@ export default function(config, helper) {
         yName:'y',
         axisLabels: {xAxis: null, yAxis: null},
         selector:"#distro",
+        colors:['yellow', 'orange', 'red', 'blue'],
         chartSize:{height:vm._config.size.height, width:vm._config.size.width},
         margin:{top: 25, right: 20, bottom: 120, left: 80},
         constrainExtremes:true});
@@ -138,7 +139,7 @@ export default function(config, helper) {
     
     chart1.boxPlots.show({reset:true, showWhiskers:false,showOutliers:false, showMean:true, showMedian:false, showBox:false});
     chart1.dataPlots.change({showPlot:true}); 
-    chart1.violinPlots.show({reset:true,clamp:0, widht:100});
+    chart1.violinPlots.show({reset:true,clamp:0, width:100});
     //Box Plot
     /* chart1.violinPlots.hide();
     chart1.boxPlots.show({reset:true});
@@ -159,7 +160,7 @@ export default function(config, helper) {
 
     //Violin Plot Clamp to Data
     if (vm._config.type === 'violin') {
-      chart1.violinPlots.show({reset:true,clamp:1, widht:100});
+      chart1.violinPlots.show({reset:true,clamp:1, width:50});
       chart1.boxPlots.show({reset:true, showWhiskers:false,showOutliers:false,boxWidth:10,lineWidth:15,colors:['#555']});
       chart1.notchBoxes.hide();
       chart1.dataPlots.change({showPlot:false,showBeanLines:false}); 
