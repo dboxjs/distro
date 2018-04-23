@@ -64,6 +64,12 @@ export default function(config, helper) {
     return vm;
   }
 
+  Distro.id = function (col) {
+    var vm = this;
+    vm._config.id = col;
+    return vm;
+  };
+
   Distro.colors = function(colors) {
     var vm = this;
     if(Array.isArray(colors)) {
@@ -121,23 +127,38 @@ export default function(config, helper) {
 
     var chart1 = makeDistroChart({
         chart: vm.chart,
-        data:vm._data,
+        data: vm._data,
+        id: vm._config.id,
         xName:'x',
         xSort: typeof vm._config.sortBy === 'object' &&  vm._config.sortBy.x ? vm._config.sortBy.x : null, 
         yName:'y',
-        axisLabels: {xAxis: vm._config.axisLabels.xAxis, yAxis: vm._config.axisLabels.yAxis},
-        selector:"#distro",
-        colors:['#fff', '#f3e2b7', '#afda61', '#406940'],
-        chartSize:{height:vm._config.size.height, width:vm._config.size.width},
-        margin:{top: 25, right: 20, bottom: 120, left: 80},
-        constrainExtremes:true});
+        axisLabels: { xAxis: vm._config.axisLabels.xAxis, yAxis: vm._config.axisLabels.yAxis },
+        selector: "#distro",
+        colors: ['#fff', '#f3e2b7', '#afda61', '#406940'],
+        chartSize: { height: vm._config.size.height, width: vm._config.size.width },
+        margin: { top: vm._config.size.margin.top, right: vm._config.size.margin.right, bottom: vm._config.size.margin.bottom, left: vm._config.size.margin.left },
+        constrainExtremes: true});
+
+    if (vm.chart.config.styles) {
+      d3.select('#distro .tooltip')
+        .style('background-color', vm.chart.style.tooltip.backgroundColor)
+        .style('line-height', 1)
+        .style('font-weight', vm.chart.style.tooltip.text.fontWeight)
+        .style('font-size', vm.chart.style.tooltip.text.fontSize) 
+        .style('color', vm.chart.style.tooltip.text.textColor)
+        .style('font-family', vm.chart.style.tooltip.text.fontFamily)
+        .style('background-color', vm.chart.style.tooltip.backgroundColor)
+        .style('padding', vm.chart.style.tooltip.text.padding)
+        .style('border', vm.chart.style.tooltip.border.width + ' solid ' + vm.chart.style.tooltip.border.color ) 
+        .style('border-radius', vm.chart.style.tooltip.border.radius);
+    }
 
     chart1.renderBoxPlot();
     chart1.renderDataPlots();
     chart1.renderNotchBoxes({showNotchBox:false});
     chart1.renderViolinPlot({showViolinPlot:false}); 
     
-    chart1.boxPlots.show({reset:true, showWhiskers:false,showOutliers:false, showMean:true, showMedian:false, showBox:false});
+    chart1.boxPlots.show({reset:true, showWhiskers:false,showOutliers:false, showMean:true, showMedian:true, showBox:false});
     chart1.dataPlots.change({showPlot:true}); 
     chart1.violinPlots.show({reset:true,clamp:0, width:100});
     //Box Plot
@@ -184,7 +205,7 @@ export default function(config, helper) {
       chart1.violinPlots.hide();
       chart1.dataPlots.show({showPlot:true, plotType:40, showBeanLines:false,colors:null});
       chart1.notchBoxes.hide();
-      chart1.boxPlots.hide();
+      //chart1.boxPlots.hide();
     }
 
     
