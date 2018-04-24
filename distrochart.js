@@ -28,6 +28,7 @@ export default function makeDistroChart(settings) {
     chart.settings = {
       data: null,
       id: null,
+      idName: null,
       xName: null,
       xSort:null,
       yName: null,
@@ -256,6 +257,7 @@ export default function makeDistroChart(settings) {
         var current_x = null;
         var current_y = null;
         var current_id = null;
+        var current_idName = null;
         var current_row;
 
         // Group the values
@@ -263,22 +265,58 @@ export default function makeDistroChart(settings) {
             current_x = chart.data[current_row][chart.settings.xName];
             current_y = chart.data[current_row][chart.settings.yName];
             current_id = chart.settings.id ? chart.data[current_row][chart.settings.id] : null;
+            current_idName = chart.settings.idName ? chart.data[current_row][chart.settings.idName] : null;
 
-            console.log('id', current_id,'x', current_x, 'y', current_y);
+            console.log('id', current_id,'name', current_idName, 'x', current_x, 'y', current_y);
             if (chart.groupObjs.hasOwnProperty(current_x)) {
-                chart.groupObjs[current_x].values.push(current_y);
+                if (chart.settings.id) {
+                    chart.groupObjs[current_x].valuesInfo.push({
+                        datum: current_y,
+                        id: current_id,
+                        idName: current_idName
+                    });
+                } else{
+                    chart.groupObjs[current_x].values.push(current_y);
+                }
+            } else {
+                if (chart.settings.id) {
+                    chart.groupObjs[current_x] = {};
+                    chart.groupObjs[current_x].valuesInfo = [{
+                        datum: current_y,
+                        id: current_id,
+                        idName: current_idName
+                    }];
+                } else{
+                    chart.groupObjs[current_x] = {};
+                    chart.groupObjs[current_x].values = [current_y];
+                }
+            }
 
+
+            //original
+            /*if (chart.groupObjs.hasOwnProperty(current_x)) {
+                chart.groupObjs[current_x].values.push(current_y);
             } else {
                 chart.groupObjs[current_x] = {};
                 chart.groupObjs[current_x].values = [current_y];
-            }
+            }*/
         }
 
         for (var cName in chart.groupObjs) {
+            if (chart.settings.id) {
+                chart.groupObjs[cName].values = [];
+                //in order to keep the array chart.groupObjs[cName].values 
+                for (let index = 0; index < chart.groupObjs[cName].valuesInfo.length; index++){
+                    chart.groupObjs[cName].values.push(chart.groupObjs[cName].valuesInfo[index].datum);
+                }
+
+                chart.groupObjs[cName].valuesInfo.sort(function(x,y) { return d3.ascending(x.datum, y.datum) });
+            }
+
+            //original
             chart.groupObjs[cName].values.sort(d3.ascending);
             chart.groupObjs[cName].metrics = {};
-            chart.groupObjs[cName].metrics = calcMetrics(chart.groupObjs[cName].values);
-
+            chart.groupObjs[cName].metrics =  calcMetrics(chart.groupObjs[cName].values);
         }
     }();
 
@@ -1570,8 +1608,6 @@ export default function makeDistroChart(settings) {
 
 
             for (cName in chart.groupObjs) {
-                console.log('cName', cName, chart.groupObjs);
-
                 cPlot = chart.groupObjs[cName].dataPlots;
                 cPlot.objs.g = chart.groupObjs[cName].g.append("g").attr("class", "data-plot");
 
@@ -1580,13 +1616,17 @@ export default function makeDistroChart(settings) {
                     cPlot.objs.points = {g: null, pts: []};
                     cPlot.objs.points.g = cPlot.objs.g.append("g").attr("class", "points-plot");
                     for (var pt = 0; pt < chart.groupObjs[cName].values.length; pt++) {
+                        let group = cName;
+                        let val = chart.groupObjs[cName].values[pt-1 >= 0 ? pt-1 : 0];
+                        let valInfo = chart.groupObjs[cName].valuesInfo[pt-1 >= 0 ? pt-1 : 0];
                         cPlot.objs.points.pts.push(cPlot.objs.points.g.append("circle")
                             .attr("class", "point")
                             .attr('r', dOpts.pointSize / 2)// Options is diameter, r takes radius so divide by 2
                             .style("fill", chart.dataPlots.colorFunct(cName))
                             .style("fill-opacity", 0.6)
                             .style("stroke", chart.dataPlots.colorFunct(cName))
-                            .style("stroke-width", "2px"));
+                            .style("stroke-width", "2px")
+                            .on('mouseover', ()=>{console.log(group, val, valInfo)}));
                     }
                 }
 
