@@ -130,6 +130,7 @@ export default function(config, helper) {
         data: vm._data,
         id: vm._config.id,
         idName: vm._config.idName,
+        events: vm._config.events,
         xName:'x',
         xSort: typeof vm._config.sortBy === 'object' &&  vm._config.sortBy.x ? vm._config.sortBy.x : null, 
         yName:'y',

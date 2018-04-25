@@ -29,6 +29,7 @@ export default function makeDistroChart(settings) {
       data: null,
       id: null,
       idName: null,
+      events: null,
       xName: null,
       xSort:null,
       yName: null,
@@ -184,8 +185,10 @@ export default function makeDistroChart(settings) {
      * @param metrics Object to use to get values for the group
      * @returns {Function} A function that provides the values for the tooltip
      */
-    function tooltipHover(groupName, metrics) {
-        var tooltipString = groupName;
+    function tooltipHover(groupName, metrics, pointName = '', pointValue = undefined) {
+        var tooltipString = pointName;
+        tooltipString += pointValue ? '<br>' + pointValue.toLocaleString() + '<br><hr style="height: 1px; background-color: #ADADAE; border: none; margin: 0.5em;">': '';
+        tooltipString += groupName;
         tooltipString += "<br\>Max: " + formatAsFloat(metrics.max, 0.1);
         tooltipString += "<br\>Q3: " + formatAsFloat(metrics.quartile3);
         tooltipString += "<br\>Mediana: " + formatAsFloat(metrics.median);
@@ -479,14 +482,14 @@ export default function makeDistroChart(settings) {
       chart.objs.tooltip = chart.objs.mainDiv.append('div').attr('class', 'tooltip').style("display", "none");
       for (var cName in chart.groupObjs) {
           chart.groupObjs[cName].g = chart.objs.g.append("g").attr("class", "group");
-          chart.groupObjs[cName].g.on("mouseover", function () {
+          /*chart.groupObjs[cName].g.on("mouseover", function () {
               chart.objs.tooltip
                   .style("display", null)
                   .style("left", (d3.event.pageX) + "px")
                   .style("top", (d3.event.pageY - 28) + "px");
           }).on("mouseout", function () {
             chart.objs.tooltip.style("display", "none");
-          }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics));
+          }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics));*/
       }
       chart.update();
     }();
@@ -1610,15 +1613,16 @@ export default function makeDistroChart(settings) {
             for (cName in chart.groupObjs) {
                 cPlot = chart.groupObjs[cName].dataPlots;
                 cPlot.objs.g = chart.groupObjs[cName].g.append("g").attr("class", "data-plot");
-
+                console.log(cName, chart.groupObjs[cName].values);
                 // Points Plot
                 if (dOpts.showPlot) {
                     cPlot.objs.points = {g: null, pts: []};
                     cPlot.objs.points.g = cPlot.objs.g.append("g").attr("class", "points-plot");
                     for (var pt = 0; pt < chart.groupObjs[cName].values.length; pt++) {
                         let group = cName;
-                        let val = chart.groupObjs[cName].values[pt-1 >= 0 ? pt-1 : 0];
-                        let valInfo = chart.groupObjs[cName].valuesInfo[pt-1 >= 0 ? pt-1 : 0];
+                        let ind = pt;
+                        let val = chart.groupObjs[cName].values[pt];
+                        let valInfo = chart.groupObjs[cName].valuesInfo[pt];
                         cPlot.objs.points.pts.push(cPlot.objs.points.g.append("circle")
                             .attr("class", "point")
                             .attr('r', dOpts.pointSize / 2)// Options is diameter, r takes radius so divide by 2
@@ -1626,7 +1630,20 @@ export default function makeDistroChart(settings) {
                             .style("fill-opacity", 0.6)
                             .style("stroke", chart.dataPlots.colorFunct(cName))
                             .style("stroke-width", "2px")
-                            .on('mouseover', ()=>{console.log(group, val, valInfo)}));
+                            .on('mouseover', ()=>{console.log(ind, group, val, valInfo.id,valInfo.idName);
+                                chart.objs.tooltip
+                                    .style("display", null)
+                                    .style("left", (d3.event.pageX) + "px")
+                                    .style("top", (d3.event.pageY - 28) + "px");
+                            }).on("mouseout", function () {
+                                chart.objs.tooltip.style("display", "none");
+                            }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics, valInfo.idName, val))
+                            .on('click', function(){
+                                console.log('distro clicked');
+                                if (chart.settings.events.onClickElement) {
+                                    chart.settings.events.onClickElement.call(this, valInfo, ind);
+                                }
+                            }));
                     }
                 }
 
