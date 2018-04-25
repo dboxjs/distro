@@ -98,8 +98,6 @@ export default function makeDistroChart(settings) {
     chart.objs = {mainDiv: null, chartDiv: null, g: null, xAxis: null, yAxis: null};
     chart.colorFunct = null;
 
-    console.log('data', chart.data);
-
     /**
      * Takes an array, function, or object mapping and created a color function from it
      * @param {function|[]|object} colorOptions
@@ -200,6 +198,11 @@ export default function makeDistroChart(settings) {
         };
     }
 
+    chart.distroSelect = function(id) {
+        console.log('this ', id, 'is selected');
+        chart.objs.mainDiv.select('.point.distro-' + id).attr('class', 'active');
+    };
+
     /**
      * Parse the data and calculates base values for the plots
      */
@@ -270,11 +273,10 @@ export default function makeDistroChart(settings) {
             current_id = chart.settings.id ? chart.data[current_row][chart.settings.id] : null;
             current_idName = chart.settings.idName ? chart.data[current_row][chart.settings.idName] : null;
 
-            console.log('id', current_id,'name', current_idName, 'x', current_x, 'y', current_y);
             if (chart.groupObjs.hasOwnProperty(current_x)) {
                 if (chart.settings.id) {
                     chart.groupObjs[current_x].valuesInfo.push({
-                        datum: current_y,
+                        value: current_y,
                         id: current_id,
                         idName: current_idName
                     });
@@ -285,7 +287,7 @@ export default function makeDistroChart(settings) {
                 if (chart.settings.id) {
                     chart.groupObjs[current_x] = {};
                     chart.groupObjs[current_x].valuesInfo = [{
-                        datum: current_y,
+                        value: current_y,
                         id: current_id,
                         idName: current_idName
                     }];
@@ -310,10 +312,10 @@ export default function makeDistroChart(settings) {
                 chart.groupObjs[cName].values = [];
                 //in order to keep the array chart.groupObjs[cName].values 
                 for (let index = 0; index < chart.groupObjs[cName].valuesInfo.length; index++){
-                    chart.groupObjs[cName].values.push(chart.groupObjs[cName].valuesInfo[index].datum);
+                    chart.groupObjs[cName].values.push(chart.groupObjs[cName].valuesInfo[index].value);
                 }
 
-                chart.groupObjs[cName].valuesInfo.sort(function(x,y) { return d3.ascending(x.datum, y.datum) });
+                chart.groupObjs[cName].valuesInfo.sort(function(x,y) { return d3.ascending(x.value, y.value) });
             }
 
             //original
@@ -1613,24 +1615,24 @@ export default function makeDistroChart(settings) {
             for (cName in chart.groupObjs) {
                 cPlot = chart.groupObjs[cName].dataPlots;
                 cPlot.objs.g = chart.groupObjs[cName].g.append("g").attr("class", "data-plot");
-                console.log(cName, chart.groupObjs[cName].values);
                 // Points Plot
                 if (dOpts.showPlot) {
                     cPlot.objs.points = {g: null, pts: []};
                     cPlot.objs.points.g = cPlot.objs.g.append("g").attr("class", "points-plot");
                     for (var pt = 0; pt < chart.groupObjs[cName].values.length; pt++) {
-                        let group = cName;
-                        let ind = pt;
                         let val = chart.groupObjs[cName].values[pt];
                         let valInfo = chart.groupObjs[cName].valuesInfo[pt];
                         cPlot.objs.points.pts.push(cPlot.objs.points.g.append("circle")
                             .attr("class", "point")
+                            //class id so it can be selected
+                            .attr('class', function() { var id = chart.settings.id ? chart.settings.id : false;
+                            return id ? 'distro-' + valInfo.id : '';})
                             .attr('r', dOpts.pointSize / 2)// Options is diameter, r takes radius so divide by 2
                             .style("fill", chart.dataPlots.colorFunct(cName))
                             .style("fill-opacity", 0.6)
                             .style("stroke", chart.dataPlots.colorFunct(cName))
                             .style("stroke-width", "2px")
-                            .on('mouseover', ()=>{console.log(ind, group, val, valInfo.id,valInfo.idName);
+                            .on('mouseover', ()=>{
                                 chart.objs.tooltip
                                     .style("display", null)
                                     .style("left", (d3.event.pageX) + "px")
@@ -1639,9 +1641,8 @@ export default function makeDistroChart(settings) {
                                 chart.objs.tooltip.style("display", "none");
                             }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics, valInfo.idName, val))
                             .on('click', function(){
-                                console.log('distro clicked');
                                 if (chart.settings.events.onClickElement) {
-                                    chart.settings.events.onClickElement.call(this, valInfo, ind);
+                                    chart.settings.events.onClickElement.call(this, valInfo);
                                 }
                             }));
                     }
