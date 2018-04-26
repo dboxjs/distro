@@ -27,6 +27,9 @@ export default function makeDistroChart(settings) {
     // Defaults
     chart.settings = {
       data: null,
+      id: null,
+      idName: null,
+      events: null,
       xName: null,
       xSort:null,
       yName: null,
@@ -46,18 +49,48 @@ export default function makeDistroChart(settings) {
 
     function formatAsFloat(d) {
       if (d % 1 !== 0) {
-        return d3.format(".2f")(d);
+        return d3.format(",.2f")(d);
       } else {
-        return d3.format(".0f")(d);
+        return d3.format(",.0f")(d);
       }
     }
+    function formatNumber(d) {
+      var value = '';
+        if (d % 1 == 0) {
+        value = d3.format(',.0f')(d);
+        } else if (d < 1 && d > 0) {
+        value = d3.format(',.2f')(d);
+        } else {
+        value = d3.format(',.1f')(d);
+        }
+        return value;
+    }
+
+    function formatRange(d) {
+        var range = d.split(' - ');
+        var value = '';
+        for(var i = 0; i < range.length; i++){
+          if (range[i] % 1 == 0) {
+            value += d3.format(',.0f')(range[i]);
+          } else if (range[i] < 1 && range[i] > 0) {
+            value += d3.format(',.2f')(range[i]);
+          } else {
+            value += d3.format(',.1f')(range[i]);
+          }
+          if (i === 0) {
+            value += ' - ';
+          }
+        }
+        return value;
+      }
 
     function logFormatNumber(d) {
       var x = Math.log(d) / Math.log(10) + 1e-6;
       return Math.abs(x - Math.floor(x)) < 0.6 ? formatAsFloat(d) : "";
     }
 
-    chart.yFormatter = formatAsFloat;
+    chart.yFormatter = formatNumber;
+    chart.xFormatter = formatRange;
 
     chart.data = chart.settings.data;
 
@@ -150,18 +183,25 @@ export default function makeDistroChart(settings) {
      * @param metrics Object to use to get values for the group
      * @returns {Function} A function that provides the values for the tooltip
      */
-    function tooltipHover(groupName, metrics) {
-        var tooltipString = groupName;
+    function tooltipHover(groupName, metrics, pointName = '', pointValue = undefined) {
+        var tooltipString = pointName;
+        tooltipString += pointValue ? '<br>' + pointValue.toLocaleString() + '<br><hr style="height: 1px; background-color: #ADADAE; border: none; margin: 0.5em;">': '';
+        tooltipString += groupName;
         tooltipString += "<br\>Max: " + formatAsFloat(metrics.max, 0.1);
         tooltipString += "<br\>Q3: " + formatAsFloat(metrics.quartile3);
         tooltipString += "<br\>Mediana: " + formatAsFloat(metrics.median);
         tooltipString += "<br\>Q1: " + formatAsFloat(metrics.quartile1);
         tooltipString += "<br\>Min: " + formatAsFloat(metrics.min);
         return function () {
-            chart.objs.tooltip.transition().duration(200).style("opacity", 0.9);
+            chart.objs.tooltip.transition().duration(200).style("opacity", 0.8);
             chart.objs.tooltip.html(tooltipString)
         };
     }
+
+    chart.distroSelect = function(id) {
+        console.log('this ', id, 'is selected');
+        chart.objs.mainDiv.select('.point.distro-' + id).attr('class', 'active');
+    };
 
     /**
      * Parse the data and calculates base values for the plots
@@ -222,26 +262,66 @@ export default function makeDistroChart(settings) {
 
         var current_x = null;
         var current_y = null;
+        var current_id = null;
+        var current_idName = null;
         var current_row;
 
         // Group the values
         for (current_row = 0; current_row < chart.data.length; current_row++) {
             current_x = chart.data[current_row][chart.settings.xName];
             current_y = chart.data[current_row][chart.settings.yName];
+            current_id = chart.settings.id ? chart.data[current_row][chart.settings.id] : null;
+            current_idName = chart.settings.idName ? chart.data[current_row][chart.settings.idName] : null;
 
             if (chart.groupObjs.hasOwnProperty(current_x)) {
+                if (chart.settings.id) {
+                    chart.groupObjs[current_x].valuesInfo.push({
+                        value: current_y,
+                        id: current_id,
+                        idName: current_idName
+                    });
+                } else{
+                    chart.groupObjs[current_x].values.push(current_y);
+                }
+            } else {
+                if (chart.settings.id) {
+                    chart.groupObjs[current_x] = {};
+                    chart.groupObjs[current_x].valuesInfo = [{
+                        value: current_y,
+                        id: current_id,
+                        idName: current_idName
+                    }];
+                } else{
+                    chart.groupObjs[current_x] = {};
+                    chart.groupObjs[current_x].values = [current_y];
+                }
+            }
+
+
+            //original
+            /*if (chart.groupObjs.hasOwnProperty(current_x)) {
                 chart.groupObjs[current_x].values.push(current_y);
             } else {
                 chart.groupObjs[current_x] = {};
                 chart.groupObjs[current_x].values = [current_y];
-            }
+            }*/
         }
 
         for (var cName in chart.groupObjs) {
+            if (chart.settings.id) {
+                chart.groupObjs[cName].values = [];
+                //in order to keep the array chart.groupObjs[cName].values 
+                for (let index = 0; index < chart.groupObjs[cName].valuesInfo.length; index++){
+                    chart.groupObjs[cName].values.push(chart.groupObjs[cName].valuesInfo[index].value);
+                }
+
+                chart.groupObjs[cName].valuesInfo.sort(function(x,y) { return d3.ascending(x.value, y.value) });
+            }
+
+            //original
             chart.groupObjs[cName].values.sort(d3.ascending);
             chart.groupObjs[cName].metrics = {};
-            chart.groupObjs[cName].metrics = calcMetrics(chart.groupObjs[cName].values);
-
+            chart.groupObjs[cName].metrics =  calcMetrics(chart.groupObjs[cName].values);
         }
     }();
 
@@ -303,7 +383,11 @@ export default function makeDistroChart(settings) {
             .tickSizeOuter(0)
             .tickSizeInner(-chart.width + (chart.margin.right + chart.margin.left));
         //chart.objs.yAxis.ticks(chart.objs.yAxis.ticks()*chart.settings.yTicks);
-        chart.objs.xAxis = d3.axisBottom().scale(chart.xScale).tickSize(5); 
+        chart.objs.xAxis = d3.axisBottom()
+            .scale(chart.xScale)
+            .tickFormat(chart.xFormatter)
+            .tickSizeOuter(0)
+            .tickSize(5); 
     }();
 
     /**
@@ -330,7 +414,7 @@ export default function makeDistroChart(settings) {
             .selectAll(".tick text")
             .attr("y", 5)
             .attr("x", -5)
-            .attr("transform", "rotate(-45)")
+            .attr("transform", "rotate(-40)")
             .style("text-anchor", "end");
         chart.objs.g.select('.x.axis .label').attr("x", chart.width / 2);
         chart.objs.g.select('.y.axis').call(chart.objs.yAxis.tickSizeInner(-chart.width));
@@ -376,7 +460,7 @@ export default function makeDistroChart(settings) {
           .call(chart.objs.xAxis)
           .append("text")
           .attr("class", "label")
-          .attr("y", 40)
+          .attr("y", chart.margin.bottom - 20)
           .attr("x", -chart.width / 2)
           .attr("dy", ".71em")
           .attr('fill', '#fff')
@@ -389,7 +473,7 @@ export default function makeDistroChart(settings) {
           .append("text")
           .attr("class", "label")
           .attr("transform", "rotate(-90)")
-          .attr("y", -chart.margin.left * 0.8)
+          .attr("y", -chart.margin.left * 0.9)
           .attr("x", -chart.height / 2)
           .attr("dy", ".71em")
           .attr('fill', '#fff')
@@ -397,17 +481,17 @@ export default function makeDistroChart(settings) {
           .text(chart.yAxisLable);
 
       // Create tooltip div
-      chart.objs.tooltip = chart.objs.mainDiv.append('div').attr('class', 'tooltip');
+      chart.objs.tooltip = chart.objs.mainDiv.append('div').attr('class', 'tooltip').style("display", "none");
       for (var cName in chart.groupObjs) {
           chart.groupObjs[cName].g = chart.objs.g.append("g").attr("class", "group");
-          chart.groupObjs[cName].g.on("mouseover", function () {
+          /*chart.groupObjs[cName].g.on("mouseover", function () {
               chart.objs.tooltip
                   .style("display", null)
                   .style("left", (d3.event.pageX) + "px")
                   .style("top", (d3.event.pageY - 28) + "px");
           }).on("mouseout", function () {
-              chart.objs.tooltip.style("display", "none");
-          }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics))
+            chart.objs.tooltip.style("display", "none");
+          }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics));*/
       }
       chart.update();
     }();
@@ -1328,7 +1412,7 @@ export default function makeDistroChart(settings) {
             show: true,
             showPlot: false,
             plotType: 'none',
-            pointSize: 6,
+            pointSize: 7,
             showLines: false,//['median'],
             showBeanLines: false,
             beanWidth: 20,
@@ -1529,19 +1613,38 @@ export default function makeDistroChart(settings) {
 
 
             for (cName in chart.groupObjs) {
-
                 cPlot = chart.groupObjs[cName].dataPlots;
                 cPlot.objs.g = chart.groupObjs[cName].g.append("g").attr("class", "data-plot");
-
                 // Points Plot
                 if (dOpts.showPlot) {
                     cPlot.objs.points = {g: null, pts: []};
                     cPlot.objs.points.g = cPlot.objs.g.append("g").attr("class", "points-plot");
                     for (var pt = 0; pt < chart.groupObjs[cName].values.length; pt++) {
+                        let val = chart.groupObjs[cName].values[pt];
+                        let valInfo = chart.groupObjs[cName].valuesInfo[pt];
                         cPlot.objs.points.pts.push(cPlot.objs.points.g.append("circle")
                             .attr("class", "point")
+                            //class id so it can be selected
+                            .attr('class', function() { var id = chart.settings.id ? chart.settings.id : false;
+                            return id ? 'distro-' + valInfo.id : '';})
                             .attr('r', dOpts.pointSize / 2)// Options is diameter, r takes radius so divide by 2
-                            .style("fill", chart.dataPlots.colorFunct(cName)));
+                            .style("fill", chart.dataPlots.colorFunct(cName))
+                            .style("fill-opacity", 0.6)
+                            .style("stroke", chart.dataPlots.colorFunct(cName))
+                            .style("stroke-width", "2px")
+                            .on('mouseover', ()=>{
+                                chart.objs.tooltip
+                                    .style("display", null)
+                                    .style("left", (d3.event.pageX) + "px")
+                                    .style("top", (d3.event.pageY - 28) + "px");
+                            }).on("mouseout", function () {
+                                chart.objs.tooltip.style("display", "none");
+                            }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics, valInfo.idName, val))
+                            .on('click', function(){
+                                if (chart.settings.events.onClickElement) {
+                                    chart.settings.events.onClickElement.call(this, valInfo);
+                                }
+                            }));
                     }
                 }
 
