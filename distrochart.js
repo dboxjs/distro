@@ -385,7 +385,7 @@ export default function makeDistroChart(settings) {
         //chart.objs.yAxis.ticks(chart.objs.yAxis.ticks()*chart.settings.yTicks);
         chart.objs.xAxis = d3.axisBottom()
             .scale(chart.xScale)
-            .tickFormat(chart.xFormatter)
+            //.tickFormat(chart.xFormatter)
             .tickSizeOuter(0)
             .tickSize(5); 
     }();
