@@ -198,10 +198,12 @@ export default function makeDistroChart(settings) {
         };
     }
 
-    chart.distroSelect = function(id) {
+    function idSelection(id) {
         console.log('this ', id, 'is selected');
         chart.objs.mainDiv.select('.point.distro-' + id).attr('class', 'active');
     };
+
+    //chart.idSelect = idSelection;
 
     /**
      * Parse the data and calculates base values for the plots
