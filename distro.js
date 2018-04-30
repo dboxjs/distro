@@ -225,7 +225,12 @@ export default function(config, helper) {
   Distro.select = function(id) {
     var vm = this;
     console.log('this distro', id, 'is selected');
-    return vm.chart.svg().select('.distro-' + id);
+    return d3.select('#distro .distro-' + id);
+  };
+
+  Distro.selectAll = function(id) {
+    var vm = this;
+    return d3.selectAll('#distro '+ id);
   };
 
   Distro.init(config);
