@@ -225,8 +225,7 @@ export default function(config, helper) {
   Distro.select = function(id) {
     var vm = this;
     console.log('this distro', id, 'is selected');
-    //vm.chart.svg().select('.point.distro-' + id).attr('class', 'active');
-    return this;
+    return vm.chart.svg().select('.distro-' + id);
   };
 
   Distro.init(config);
