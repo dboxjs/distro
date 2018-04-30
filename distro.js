@@ -224,7 +224,6 @@ export default function(config, helper) {
 
   Distro.select = function(id) {
     var vm = this;
-    console.log('this distro', id, 'is selected');
     return d3.select('#distro .distro-' + id);
   };
 
