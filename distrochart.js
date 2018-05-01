@@ -183,15 +183,16 @@ export default function makeDistroChart(settings) {
      * @param metrics Object to use to get values for the group
      * @returns {Function} A function that provides the values for the tooltip
      */
-    function tooltipHover(groupName, metrics, pointName = '', pointValue = undefined) {
+    function tooltipHover(groupName, metrics, pointName = '', pointValue = undefined, boxpart = '') {
         var tooltipString = pointName;
         tooltipString += pointValue ? '<br>' + pointValue.toLocaleString() + '<br><hr style="height: 1px; background-color: #ADADAE; border: none; margin: 0.5em;">': '';
         tooltipString += groupName;
-        tooltipString += "<br\>Max: " + formatAsFloat(metrics.max, 0.1);
-        tooltipString += "<br\>Q3: " + formatAsFloat(metrics.quartile3);
-        tooltipString += "<br\>Mediana: " + formatAsFloat(metrics.median);
-        tooltipString += "<br\>Q1: " + formatAsFloat(metrics.quartile1);
-        tooltipString += "<br\>Min: " + formatAsFloat(metrics.min);
+        tooltipString += boxpart ? '' : "<br\>Max: " + formatAsFloat(metrics.max, 0.1);
+        tooltipString += boxpart ? '' : "<br\>Q3: " + formatAsFloat(metrics.quartile3);
+        tooltipString += boxpart ? boxpart === 'mean' ? "<br\>Media: " + formatAsFloat(metrics.mean) : '' : "<br\>Media: " + formatAsFloat(metrics.mean);
+        tooltipString += boxpart ? boxpart  === 'median' ? "<br\>Mediana: " + formatAsFloat(metrics.median) : '' : "<br\>Mediana: " + formatAsFloat(metrics.median);
+        tooltipString += boxpart ? '' : "<br\>Q1: " + formatAsFloat(metrics.quartile1);
+        tooltipString += boxpart ? '' : "<br\>Min: " + formatAsFloat(metrics.min);
         return function () {
             chart.objs.tooltip.transition().duration(200).style("opacity", 0.8);
             chart.objs.tooltip.html(tooltipString)
@@ -1080,7 +1081,15 @@ export default function makeDistroChart(settings) {
                     cBoxPlot.objs.median.circle = cBoxPlot.objs.g.append("circle")
                         .attr("class", "median")
                         .attr('r', bOpts.medianCSize)
-                        .style("fill", chart.boxPlots.colorFunct(cName));
+                        .style("fill", chart.boxPlots.colorFunct(cName))
+                        .on("mouseover", function () {
+                            chart.objs.tooltip
+                                .style("display", null)
+                                .style("left", (d3.event.pageX) + "px")
+                                .style("top", (d3.event.pageY - 28) + "px");
+                        }).on("mouseout", function () {
+                          chart.objs.tooltip.style("display", "none");
+                        }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics, '', '', 'median'));
                 }
 
                 // Plot Mean (default no plot)
@@ -1091,7 +1100,15 @@ export default function makeDistroChart(settings) {
                     cBoxPlot.objs.mean.circle = cBoxPlot.objs.g.append("circle")
                         .attr("class", "mean")
                         .attr('r', bOpts.medianCSize)
-                        .style("fill", chart.boxPlots.colorFunct(cName));
+                        .style("fill", chart.boxPlots.colorFunct(cName))
+                        .on("mouseover", function () {
+                            chart.objs.tooltip
+                                .style("display", null)
+                                .style("left", (d3.event.pageX) + "px")
+                                .style("top", (d3.event.pageY - 28) + "px");
+                        }).on("mouseout", function () {
+                          chart.objs.tooltip.style("display", "none");
+                        }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics, '', '', 'mean'));
                 }
 
                 // Plot Whiskers (default show)
