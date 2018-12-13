@@ -21,7 +21,6 @@ export default function(config, helper) {
     
     vm._tip = vm.utils.d3.tip().attr('class', 'd3-tip')
       .html(vm._config.tip ? vm._config.tip : function(d) {
-        console.log(d);
         var html ='';
         //html += d.x ? ('<span>' + (Number.isNaN(+d.x) ? d.x : vm.utils.format(d.x)) + '</span></br>') : '';
         html += d.y ? ('<span>' + (Number.isNaN(+d.y) ? d.y : vm.utils.format(d.y)) + '</span></br>') : '';
