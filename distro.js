@@ -22,10 +22,10 @@ export default function(config, helper) {
     vm._tip = vm.utils.d3.tip().attr('class', 'd3-tip')
       .html(vm._config.tip ? vm._config.tip : function(d) {
         var html ='';
-        //html += d.x ? ('<span>' + (Number.isNaN(+d.x) ? d.x : vm.utils.format(d.x)) + '</span></br>') : '';
-        html += d.y ? ('<span>' + (Number.isNaN(+d.y) ? d.y : vm.utils.format(d.y)) + '</span></br>') : '';
-        /* html += d.magnitude ? ('<span>' + (Number.isNaN(+d.magnitude) ? d.magnitude : vm.utils.format(d.magnitude)) + '</span></br>') : '';
-        html += d.color ? ('<span>' + (Number.isNaN(+d.color) ? d.color : vm.utils.format(d.color)) + '</span>') : ''; */
+        //html += d.x ? ('<span>' + (Number.isNaN(+d.x) ? d.x : vm.utils.format(vm._config.xAxis)(d.x)) + '</span></br>') : '';
+        html += d.y ? ('<span>' + (Number.isNaN(+d.y) ? d.y : vm.utils.format(vm._config.yAxis)(d.y)) + '</span></br>') : '';
+        /* html += d.magnitude ? ('<span>' + (Number.isNaN(+d.magnitude) ? d.magnitude : vm.utils.format()(d.magnitude)) + '</span></br>') : '';
+        html += d.color ? ('<span>' + (Number.isNaN(+d.color) ? d.color : vm.utils.format()(d.color)) + '</span>') : ''; */
         return html;
       });
 

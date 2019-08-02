@@ -111,7 +111,7 @@ export default function makeDistroChart(settings) {
             var colorMap = {}, cColor = 0;
             /* @TODO - REVIEW PREVIOUS CODE 
             for (var cName in chart.groupObjs) {
-                debugger;
+                
                 colorMap[cName] = colorOptions[cColor];
                 cColor = (cColor + 1) % colorOptions.length;
             }*/
