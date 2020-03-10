@@ -1,6 +1,6 @@
 {
   "name": "@dboxjs/violin",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A violin layer for dbox",
   "main": "violin.js",
   "scripts": {
