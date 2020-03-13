@@ -1,28 +1,28 @@
 {
-  "name": "@dboxjs/violin",
+  "name": "@dboxjs/distro",
   "version": "0.1.0",
-  "description": "A violin layer for dbox",
-  "main": "violin.js",
+  "description": "A distro chart layer for dbox",
+  "main": "distro.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dboxjs/violin.git"
+    "url": "git+https://github.com/dboxjs/distro.git"
   },
   "keywords": [
     "d3",
     "data",
     "charts",
     "dbox",
-    "violin"
+    "distro"
   ],
   "author": "@dboxjs",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/dboxjs/violin/issues"
+    "url": "https://github.com/dboxjs/distro/issues"
   },
-  "homepage": "https://github.com/dboxjs/violin#readme",
+  "homepage": "https://github.com/dboxjs/distro#readme",
   "devDependencies": {
     "babel-eslint": "^8.0.3",
     "babel-plugin-external-helpers": "^6.22.0",

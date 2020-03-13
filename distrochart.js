@@ -21,7 +21,6 @@ import * as d3 from 'd3';
  * @returns {object} chart A chart object
  */
 export default function makeDistroChart(settings) {
-
     var chart = {};
 
     // Defaults
