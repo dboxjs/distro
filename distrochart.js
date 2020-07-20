@@ -25,42 +25,51 @@ export default function makeDistroChart(settings) {
 
     // Defaults
     chart.settings = {
-      data: null,
-      id: null,
-      idName: null,
-      events: null,
-      xName: null,
-      xSort:null,
-      yName: null,
-      selector: null,
-      axisLables: null,
-      yTicks: 1,
-      scale: 'linear',
-      chartSize: {width: 800, height: 400},
-      margin: {top: 15, right: 60, bottom: 40, left: 50},
-      constrainExtremes: false,
-      color: d3.scaleOrdinal(d3.schemeCategory10)
+        data: null,
+        id: null,
+        idName: null,
+        events: null,
+        xName: null,
+        xSort: null,
+        yName: null,
+        selector: null,
+        axisLables: null,
+        yTicks: 1,
+        scale: 'linear',
+        chartSize: {
+            width: 800,
+            height: 400
+        },
+        margin: {
+            top: 15,
+            right: 60,
+            bottom: 40,
+            left: 50
+        },
+        constrainExtremes: false,
+        color: d3.scaleOrdinal(d3.schemeCategory10)
     };
     for (var setting in settings) {
-      chart.settings[setting] = settings[setting]
+        chart.settings[setting] = settings[setting]
     }
 
 
     function formatAsFloat(d) {
-      if (d % 1 !== 0) {
-        return d3.format(",.2f")(d);
-      } else {
-        return d3.format(",.0f")(d);
-      }
-    }
-    function formatNumber(d) {
-      var value = '';
-        if (d % 1 == 0) {
-        value = d3.format(',.0f')(d);
-        } else if (d < 1 && d > 0) {
-        value = d3.format(',.2f')(d);
+        if (d % 1 !== 0) {
+            return d3.format(",.2f")(d);
         } else {
-        value = d3.format(',.1f')(d);
+            return d3.format(",.0f")(d);
+        }
+    }
+
+    function formatNumber(d) {
+        var value = '';
+        if (d % 1 === 0) {
+            value = d3.format(',.0f')(d);
+        } else if (d < 1 && d > 0) {
+            value = d3.format(',.2f')(d);
+        } else {
+            value = d3.format(',.1f')(d);
         }
         return value;
     }
@@ -68,24 +77,24 @@ export default function makeDistroChart(settings) {
     function formatRange(d) {
         var range = d.split(' - ');
         var value = '';
-        for(var i = 0; i < range.length; i++){
-          if (range[i] % 1 == 0) {
-            value += d3.format(',.0f')(range[i]);
-          } else if (range[i] < 1 && range[i] > 0) {
-            value += d3.format(',.2f')(range[i]);
-          } else {
-            value += d3.format(',.1f')(range[i]);
-          }
-          if (i === 0) {
-            value += ' - ';
-          }
+        for (var i = 0; i < range.length; i++) {
+            if (range[i] % 1 === 0) {
+                value += d3.format(',.0f')(range[i]);
+            } else if (range[i] < 1 && range[i] > 0) {
+                value += d3.format(',.2f')(range[i]);
+            } else {
+                value += d3.format(',.1f')(range[i]);
+            }
+            if (i === 0) {
+                value += ' - ';
+            }
         }
         return value;
-      }
+    }
 
     function logFormatNumber(d) {
-      var x = Math.log(d) / Math.log(10) + 1e-6;
-      return Math.abs(x - Math.floor(x)) < 0.6 ? formatAsFloat(d) : "";
+        var x = Math.log(d) / Math.log(10) + 1e-6;
+        return Math.abs(x - Math.floor(x)) < 0.6 ? formatAsFloat(d) : "";
     }
 
     chart.yFormatter = formatNumber;
@@ -94,7 +103,13 @@ export default function makeDistroChart(settings) {
     chart.data = chart.settings.data;
 
     chart.groupObjs = {}; //The data organized by grouping and sorted as well as any metadata for the groups
-    chart.objs = {mainDiv: null, chartDiv: null, g: null, xAxis: null, yAxis: null};
+    chart.objs = {
+        mainDiv: null,
+        chartDiv: null,
+        g: null,
+        xAxis: null,
+        yAxis: null
+    };
     chart.colorFunct = null;
 
     /**
@@ -103,30 +118,31 @@ export default function makeDistroChart(settings) {
      * @returns {function} Function to be used to determine chart colors
      */
     function getColorFunct(colorOptions) {
-        if (typeof colorOptions == 'function') {
+        if (typeof colorOptions === 'function') {
             return colorOptions
         } else if (Array.isArray(colorOptions)) {
             //  If an array is provided, map it to the domain
-            var colorMap = {}, cColor = 0;
+            var colorMap = {},
+                cColor = 0;
             /* @TODO - REVIEW PREVIOUS CODE 
             for (var cName in chart.groupObjs) {
                 
                 colorMap[cName] = colorOptions[cColor];
                 cColor = (cColor + 1) % colorOptions.length;
             }*/
-            if (Array.isArray(chart.settings.xSort)){
-                chart.settings.xSort.forEach(function(key, index){
+            if (Array.isArray(chart.settings.xSort)) {
+                chart.settings.xSort.forEach(function (key, index) {
                     colorMap[key] = colorOptions[index];
                 })
-            }else{
-                Object.keys(chart.groupObjs).sort(d3.ascending).forEach(function(key, index){
+            } else {
+                Object.keys(chart.groupObjs).sort(d3.ascending).forEach(function (key, index) {
                     colorMap[key] = colorOptions[index];
                 })
             }
             return function (group) {
                 return colorMap[group];
             }
-        } else if (typeof colorOptions == 'object') {
+        } else if (typeof colorOptions === 'object') {
             // if an object is provided, assume it maps to  the colors
             return function (group) {
                 return colorOptions[group];
@@ -143,7 +159,11 @@ export default function makeDistroChart(settings) {
      * @returns {{left: null, right: null, middle: null}}
      */
     function getObjWidth(objWidth, gName) {
-        var objSize = {left: null, right: null, middle: null};
+        var objSize = {
+            left: null,
+            right: null,
+            middle: null
+        };
         var width = chart.xScale.bandwidth() * (objWidth / 100);
         var padding = (chart.xScale.bandwidth() - width) / 2;
         var gShift = chart.xScale(gName);
@@ -160,7 +180,7 @@ export default function makeDistroChart(settings) {
      * @returns {number}
      */
     function addJitter(doJitter, width) {
-        if (doJitter !== true || width == 0) {
+        if (doJitter !== true || width === 0) {
             return 0
         }
         return Math.floor(Math.random() * width) - width / 2;
@@ -184,12 +204,12 @@ export default function makeDistroChart(settings) {
      */
     function tooltipHover(groupName, metrics, pointName = '', pointValue = undefined, boxpart = '') {
         var tooltipString = pointName;
-        tooltipString += pointValue ? '<br>' + pointValue.toLocaleString() + '<br><hr style="height: 1px; background-color: #ADADAE; border: none; margin: 0.5em;">': '';
+        tooltipString += pointValue ? '<br>' + pointValue.toLocaleString() + '<br><hr style="height: 1px; background-color: #ADADAE; border: none; margin: 0.5em;">' : '';
         tooltipString += groupName;
         tooltipString += boxpart ? '' : "<br\>Max: " + formatAsFloat(metrics.max, 0.1);
         tooltipString += boxpart ? '' : "<br\>Q3: " + formatAsFloat(metrics.quartile3);
         tooltipString += boxpart ? boxpart === 'mean' ? "<br\>Media: " + formatAsFloat(metrics.mean) : '' : "<br\>Media: " + formatAsFloat(metrics.mean);
-        tooltipString += boxpart ? boxpart  === 'median' ? "<br\>Mediana: " + formatAsFloat(metrics.median) : '' : "<br\>Mediana: " + formatAsFloat(metrics.median);
+        tooltipString += boxpart ? boxpart === 'median' ? "<br\>Mediana: " + formatAsFloat(metrics.median) : '' : "<br\>Mediana: " + formatAsFloat(metrics.median);
         tooltipString += boxpart ? '' : "<br\>Q1: " + formatAsFloat(metrics.quartile1);
         tooltipString += boxpart ? '' : "<br\>Min: " + formatAsFloat(metrics.min);
         return function () {
@@ -208,7 +228,7 @@ export default function makeDistroChart(settings) {
     /**
      * Parse the data and calculates base values for the plots
      */
-    !function prepareData() {
+    ! function prepareData() {
         function calcMetrics(values) {
 
             var metrics = { //These are the original non�scaled values
@@ -282,7 +302,7 @@ export default function makeDistroChart(settings) {
                         id: current_id,
                         idName: current_idName
                     });
-                } else{
+                } else {
                     chart.groupObjs[current_x].values.push(current_y);
                 }
             } else {
@@ -293,7 +313,7 @@ export default function makeDistroChart(settings) {
                         id: current_id,
                         idName: current_idName
                     }];
-                } else{
+                } else {
                     chart.groupObjs[current_x] = {};
                     chart.groupObjs[current_x].values = [current_y];
                 }
@@ -313,25 +333,27 @@ export default function makeDistroChart(settings) {
             if (chart.settings.id) {
                 chart.groupObjs[cName].values = [];
                 //in order to keep the array chart.groupObjs[cName].values 
-                for (let index = 0; index < chart.groupObjs[cName].valuesInfo.length; index++){
+                for (let index = 0; index < chart.groupObjs[cName].valuesInfo.length; index++) {
                     chart.groupObjs[cName].values.push(chart.groupObjs[cName].valuesInfo[index].value);
                 }
 
-                chart.groupObjs[cName].valuesInfo.sort(function(x,y) { return d3.ascending(x.value, y.value) });
+                chart.groupObjs[cName].valuesInfo.sort(function (x, y) {
+                    return d3.ascending(x.value, y.value)
+                });
             }
 
             //original
             chart.groupObjs[cName].values.sort(d3.ascending);
             chart.groupObjs[cName].metrics = {};
-            chart.groupObjs[cName].metrics =  calcMetrics(chart.groupObjs[cName].values);
+            chart.groupObjs[cName].metrics = calcMetrics(chart.groupObjs[cName].values);
         }
     }();
 
     /**
      * Prepare the chart settings and chart div and svg
      */
-    !function prepareSettings() {
-        var domain = ''; 
+    ! function prepareSettings() {
+        var domain = '';
         //Set base settings
         chart.margin = chart.settings.margin;
         chart.divWidth = chart.settings.chartSize.width;
@@ -363,14 +385,16 @@ export default function makeDistroChart(settings) {
             chart.range = d3.extent(fences);
 
         } else {
-            chart.range = d3.extent(chart.data, function (d) {return d[chart.settings.yName];});
+            chart.range = d3.extent(chart.data, function (d) {
+                return d[chart.settings.yName];
+            });
         }
 
         chart.colorFunct = getColorFunct(chart.settings.colors);
 
         // Build Scale functions
         chart.yScale.range([chart.height, 0]).domain(chart.range).nice().clamp(true);
-        
+
         if (chart.settings.xSort === null) {
             domain = Object.keys(chart.groupObjs)
         } else {
@@ -389,7 +413,7 @@ export default function makeDistroChart(settings) {
             .scale(chart.xScale)
             //.tickFormat(chart.xFormatter)
             .tickSizeOuter(0)
-            .tickSize(5); 
+            .tickSize(5);
     }();
 
     /**
@@ -405,7 +429,7 @@ export default function makeDistroChart(settings) {
         chart.yScale.range([chart.height, 0]);
 
         // Update the yDomain if the Violin plot clamp is set to -1 meaning it will extend the violins to make nice points
-        if (chart.violinPlots && chart.violinPlots.options.show == true && chart.violinPlots.options._yDomainVP != null) {
+        if (chart.violinPlots && chart.violinPlots.options.show === true && chart.violinPlots.options._yDomainVP != null) {
             chart.yScale.domain(chart.violinPlots.options._yDomainVP).nice().clamp(true);
         } else {
             chart.yScale.domain(chart.range).nice().clamp(true);
@@ -429,73 +453,73 @@ export default function makeDistroChart(settings) {
     /**
      * Prepare the chart html elements
      */
-    !function prepareChart() {
-      // Build main div and chart div
-      chart.objs.mainDiv = d3.select(chart.settings.selector)
-        .style("width", chart.divWidth + "px")
-        .style("height", chart.divHeight+ "px");
-      // Add all the divs to make it centered and responsive
-      chart.objs.mainDiv.append("div")
-        .attr("class", "inner-wrapper")
-        .style("padding-bottom", "5%")
-        .style("height", chart.divHeight + "px")
-        .append("div").attr("class", "outer-box")
-        .append("div").attr("class", "inner-box");
-      // Capture the inner div for the chart (where the chart actually is)
-      chart.selector = chart.settings.selector + " .inner-box";   
-      chart.objs.chartDiv = d3.select(chart.selector);
-      d3.select(window).on('resize.' + chart.selector, chart.update);
+    ! function prepareChart() {
+        // Build main div and chart div
+        chart.objs.mainDiv = d3.select(chart.settings.selector)
+            .style("width", chart.divWidth + "px")
+            .style("height", chart.divHeight + "px");
+        // Add all the divs to make it centered and responsive
+        chart.objs.mainDiv.append("div")
+            .attr("class", "inner-wrapper")
+            .style("padding-bottom", "5%")
+            .style("height", chart.divHeight + "px")
+            .append("div").attr("class", "outer-box")
+            .append("div").attr("class", "inner-box");
+        // Capture the inner div for the chart (where the chart actually is)
+        chart.selector = chart.settings.selector + " .inner-box";
+        chart.objs.chartDiv = d3.select(chart.selector);
+        d3.select(window).on('resize.' + chart.selector, chart.update);
 
-      // Create the svg
-      chart.objs.g = chart.objs.chartDiv.append("svg")
-        .attr("class", "chart-area")
-        .attr("width", chart.width + (chart.margin.left + chart.margin.right))
-        .attr("height", chart.height + (chart.margin.top + chart.margin.bottom))
-        .append("g")
-        .attr("transform", "translate(" + chart.margin.left + "," + chart.margin.top + ")");
-      
-      // Create axes
-      chart.objs.axes = chart.objs.g.append("g").attr("class", "axis");
-      chart.objs.axes.append("g")
-          .attr("class", "x axis")
-          .attr("transform", "translate(0," + chart.height + ")")
-          .call(chart.objs.xAxis)
-          .append("text")
-          .attr("class", "label")
-          .attr("y", chart.margin.bottom - 20)
-          .attr("x", -chart.width / 2)
-          .attr("dy", ".71em")
-          .attr('fill', '#fff')
-          .style("text-anchor", "middle")
-          .text(chart.xAxisLable);
+        // Create the svg
+        chart.objs.g = chart.objs.chartDiv.append("svg")
+            .attr("class", "chart-area")
+            .attr("width", chart.width + (chart.margin.left + chart.margin.right))
+            .attr("height", chart.height + (chart.margin.top + chart.margin.bottom))
+            .append("g")
+            .attr("transform", "translate(" + chart.margin.left + "," + chart.margin.top + ")");
 
-      chart.objs.axes.append("g")
-          .attr("class", "y axis")
-          .call(chart.objs.yAxis)
-          .append("text")
-          .attr("class", "label")
-          .attr("transform", "rotate(-90)")
-          .attr("y", -chart.margin.left * 0.9)
-          .attr("x", -chart.height / 2)
-          .attr("dy", ".71em")
-          .attr('fill', '#fff')
-          .style("text-anchor", "middle")
-          .text(chart.yAxisLable);
+        // Create axes
+        chart.objs.axes = chart.objs.g.append("g").attr("class", "axis");
+        chart.objs.axes.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + chart.height + ")")
+            .call(chart.objs.xAxis)
+            .append("text")
+            .attr("class", "label")
+            .attr("y", chart.margin.bottom - 20)
+            .attr("x", -chart.width / 2)
+            .attr("dy", ".71em")
+            .attr('fill', '#fff')
+            .style("text-anchor", "middle")
+            .text(chart.xAxisLable);
 
-      // Create tooltip div
-      chart.objs.tooltip = chart.objs.mainDiv.append('div').attr('class', 'tooltip').style("display", "none");
-      for (var cName in chart.groupObjs) {
-          chart.groupObjs[cName].g = chart.objs.g.append("g").attr("class", "group");
-          /*chart.groupObjs[cName].g.on("mouseover", function () {
-              chart.objs.tooltip
-                  .style("display", null)
-                  .style("left", (d3.event.pageX) + "px")
-                  .style("top", (d3.event.pageY - 28) + "px");
-          }).on("mouseout", function () {
-            chart.objs.tooltip.style("display", "none");
-          }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics));*/
-      }
-      chart.update();
+        chart.objs.axes.append("g")
+            .attr("class", "y axis")
+            .call(chart.objs.yAxis)
+            .append("text")
+            .attr("class", "label")
+            .attr("transform", "rotate(-90)")
+            .attr("y", -chart.margin.left * 0.9)
+            .attr("x", -chart.height / 2)
+            .attr("dy", ".71em")
+            .attr('fill', '#fff')
+            .style("text-anchor", "middle")
+            .text(chart.yAxisLable);
+
+        // Create tooltip div
+        chart.objs.tooltip = chart.objs.mainDiv.append('div').attr('class', 'tooltip').style("display", "none");
+        for (var cName in chart.groupObjs) {
+            chart.groupObjs[cName].g = chart.objs.g.append("g").attr("class", "group");
+            /*chart.groupObjs[cName].g.on("mouseover", function () {
+                chart.objs.tooltip
+                    .style("display", null)
+                    .style("left", (d3.event.pageX) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+            }).on("mouseout", function () {
+              chart.objs.tooltip.style("display", "none");
+            }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics));*/
+        }
+        chart.update();
     }();
 
     /**
@@ -568,7 +592,9 @@ export default function makeDistroChart(settings) {
                     chart.violinPlots.reset()
                 }
             } else {
-                opts = {show: true};
+                opts = {
+                    show: true
+                };
             }
             chart.violinPlots.change(opts);
 
@@ -581,7 +607,9 @@ export default function makeDistroChart(settings) {
                     chart.violinPlots.reset()
                 }
             } else {
-                opts = {show: false};
+                opts = {
+                    show: false
+                };
             }
             chart.violinPlots.change(opts);
 
@@ -607,22 +635,22 @@ export default function makeDistroChart(settings) {
                 var interpolateMax = chart.groupObjs[cName].metrics.max,
                     interpolateMin = chart.groupObjs[cName].metrics.min;
 
-                if (vOpts.clamp == 0 || vOpts.clamp == -1) { //
+                if (vOpts.clamp === 0 || vOpts.clamp === -1) { //
                     // When clamp is 0, calculate the min and max that is needed to bring the violin plot to a point
                     // interpolateMax = the Minimum value greater than the max where y = 0
                     interpolateMax = d3.min(cViolinPlot.kdedata.filter(function (d) {
-                        return (d.x > chart.groupObjs[cName].metrics.max && d.y == 0)
+                        return (d.x > chart.groupObjs[cName].metrics.max && d.y === 0)
                     }), function (d) {
                         return d.x;
                     });
                     // interpolateMin = the Maximum value less than the min where y = 0
                     interpolateMin = d3.max(cViolinPlot.kdedata.filter(function (d) {
-                        return (d.x < chart.groupObjs[cName].metrics.min && d.y == 0)
+                        return (d.x < chart.groupObjs[cName].metrics.min && d.y === 0)
                     }), function (d) {
                         return d.x;
                     });
                     // If clamp is -1 we need to extend the axises so that the violins come to a point
-                    if (vOpts.clamp == -1) {
+                    if (vOpts.clamp === -1) {
                         kdeTester = eKernelTest(eKernel(vOpts.bandwidth), chart.groupObjs[cName].values);
                         if (!interpolateMax) {
                             var interMaxY = kdeTester(chart.groupObjs[cName].metrics.max);
@@ -638,7 +666,7 @@ export default function makeDistroChart(settings) {
                         if (!interpolateMin) {
                             var interMinY = kdeTester(chart.groupObjs[cName].metrics.min);
                             var interMinX = chart.groupObjs[cName].metrics.min;
-                            var count = 25;  // Arbitrary limit to make sure we don't get an infinite loop
+                            var count = 25; // Arbitrary limit to make sure we don't get an infinite loop
                             while (count > 0 && interMinY != 0) {
                                 interMinY = kdeTester(interMinX);
                                 interMinX -= 1;
@@ -688,19 +716,29 @@ export default function makeDistroChart(settings) {
 
                 var yVScale = d3.scaleLinear()
                     .range([width, 0])
-                    .domain([0, d3.max(cViolinPlot.kdedata, function (d) {return d.y;})])
+                    .domain([0, d3.max(cViolinPlot.kdedata, function (d) {
+                        return d.y;
+                    })])
                     .clamp(true);
 
                 var area = d3.area()
                     .curve(vOpts.curve)
-                    .x(function (d) {return xVScale(d.x);})
+                    .x(function (d) {
+                        return xVScale(d.x);
+                    })
                     .y0(width)
-                    .y1(function (d) {return yVScale(d.y);});
+                    .y1(function (d) {
+                        return yVScale(d.y);
+                    });
 
                 var line = d3.line()
                     .curve(vOpts.curve)
-                    .x(function (d) {return xVScale(d.x);})
-                    .y(function (d) {return yVScale(d.y)});
+                    .x(function (d) {
+                        return xVScale(d.x);
+                    })
+                    .y(function (d) {
+                        return yVScale(d.y)
+                    });
 
                 if (cViolinPlot.objs.left.area) {
                     cViolinPlot.objs.left.area
@@ -736,14 +774,24 @@ export default function makeDistroChart(settings) {
                 chart.violinPlots.color = chart.colorFunct
             }
 
-            if (vOpts.show == false) {return}
+            if (vOpts.show === false) {
+                return
+            }
 
             for (cName in chart.groupObjs) {
                 cViolinPlot = chart.groupObjs[cName].violin;
 
                 cViolinPlot.objs.g = chart.groupObjs[cName].g.append("g").attr("class", "violin-plot");
-                cViolinPlot.objs.left = {area: null, line: null, g: null};
-                cViolinPlot.objs.right = {area: null, line: null, g: null};
+                cViolinPlot.objs.left = {
+                    area: null,
+                    line: null,
+                    g: null
+                };
+                cViolinPlot.objs.right = {
+                    area: null,
+                    line: null,
+                    g: null
+                };
 
                 cViolinPlot.objs.left.g = cViolinPlot.objs.g.append("g");
                 cViolinPlot.objs.right.g = cViolinPlot.objs.g.append("g");
@@ -776,7 +824,12 @@ export default function makeDistroChart(settings) {
         function kernelDensityEstimator(kernel, x) {
             return function (sample) {
                 return x.map(function (x) {
-                    return {x:x, y:d3.mean(sample, function (v) {return kernel(x - v);})};
+                    return {
+                        x: x,
+                        y: d3.mean(sample, function (v) {
+                            return kernel(x - v);
+                        })
+                    };
                 });
             };
         }
@@ -791,7 +844,9 @@ export default function makeDistroChart(settings) {
         // Given an array, find the value for a single point, even if it is not in the domain
         function eKernelTest(kernel, array) {
             return function (testX) {
-                return d3.mean(array, function (v) {return kernel(testX - v);})
+                return d3.mean(array, function (v) {
+                    return kernel(testX - v);
+                })
             }
         }
 
@@ -853,7 +908,7 @@ export default function makeDistroChart(settings) {
         /**
          * Calculates all the outlier points for each group
          */
-        !function calcAllOutliers() {
+        ! function calcAllOutliers() {
 
             /**
              * Create lists of the outliers for each content group
@@ -865,7 +920,9 @@ export default function makeDistroChart(settings) {
                 var cOutliers = [];
                 var cOut, idx;
                 for (idx = 0; idx <= cGroup.values.length; idx++) {
-                    cOut = {value: cGroup.values[idx]};
+                    cOut = {
+                        value: cGroup.values[idx]
+                    };
 
                     if (cOut.value < cGroup.metrics.lowerInnerFence) {
                         if (cOut.value < cGroup.metrics.lowerOuterFence) {
@@ -918,7 +975,9 @@ export default function makeDistroChart(settings) {
                     chart.boxPlots.reset()
                 }
             } else {
-                opts = {show: true};
+                opts = {
+                    show: true
+                };
             }
             chart.boxPlots.change(opts)
 
@@ -930,7 +989,9 @@ export default function makeDistroChart(settings) {
                     chart.boxPlots.reset()
                 }
             } else {
-                opts = {show: false};
+                opts = {
+                    show: false
+                };
             }
             chart.boxPlots.change(opts)
         };
@@ -1053,7 +1114,7 @@ export default function makeDistroChart(settings) {
                 chart.boxPlots.colorFunct = chart.colorFunct
             }
 
-            if (bOpts.show == false) {
+            if (bOpts.show === false) {
                 return
             }
 
@@ -1074,7 +1135,10 @@ export default function makeDistroChart(settings) {
 
                 //Plot Median (default show)
                 if (bOpts.showMedian) {
-                    cBoxPlot.objs.median = {line: null, circle: null};
+                    cBoxPlot.objs.median = {
+                        line: null,
+                        circle: null
+                    };
                     cBoxPlot.objs.median.line = cBoxPlot.objs.g.append("line")
                         .attr("class", "median");
                     cBoxPlot.objs.median.circle = cBoxPlot.objs.g.append("circle")
@@ -1087,13 +1151,16 @@ export default function makeDistroChart(settings) {
                                 .style("left", (d3.event.pageX) + "px")
                                 .style("top", (d3.event.pageY - 28) + "px");
                         }).on("mouseout", function () {
-                          chart.objs.tooltip.style("display", "none");
+                            chart.objs.tooltip.style("display", "none");
                         }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics, '', '', 'median'));
                 }
 
                 // Plot Mean (default no plot)
                 if (bOpts.showMean) {
-                    cBoxPlot.objs.mean = {line: null, circle: null};
+                    cBoxPlot.objs.mean = {
+                        line: null,
+                        circle: null
+                    };
                     cBoxPlot.objs.mean.line = cBoxPlot.objs.g.append("line")
                         .attr("class", "mean");
                     cBoxPlot.objs.mean.circle = cBoxPlot.objs.g.append("circle")
@@ -1106,14 +1173,20 @@ export default function makeDistroChart(settings) {
                                 .style("left", (d3.event.pageX) + "px")
                                 .style("top", (d3.event.pageY - 28) + "px");
                         }).on("mouseout", function () {
-                          chart.objs.tooltip.style("display", "none");
+                            chart.objs.tooltip.style("display", "none");
                         }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics, '', '', 'mean'));
                 }
 
                 // Plot Whiskers (default show)
                 if (bOpts.showWhiskers) {
-                    cBoxPlot.objs.upperWhisker = {fence: null, line: null};
-                    cBoxPlot.objs.lowerWhisker = {fence: null, line: null};
+                    cBoxPlot.objs.upperWhisker = {
+                        fence: null,
+                        line: null
+                    };
+                    cBoxPlot.objs.lowerWhisker = {
+                        fence: null,
+                        line: null
+                    };
                     cBoxPlot.objs.upperWhisker.fence = cBoxPlot.objs.g.append("line")
                         .attr("class", "upper whisker")
                         .style("stroke", chart.boxPlots.colorFunct(cName));
@@ -1212,7 +1285,7 @@ export default function makeDistroChart(settings) {
          */
         function makeNotchBox(cNotch, notchBounds) {
             var scaledValues = [];
-            if (nOpts.notchStyle == 'box') {
+            if (nOpts.notchStyle === 'box') {
                 scaledValues = [
                     [notchBounds.boxLeft, chart.yScale(cNotch.metrics.quartile1)],
                     [notchBounds.boxLeft, chart.yScale(cNotch.metrics.lowerNotch)],
@@ -1251,7 +1324,7 @@ export default function makeDistroChart(settings) {
         /**
          * Calculate the confidence intervals
          */
-        !function calcNotches() {
+        ! function calcNotches() {
             var cNotch, modifier;
             for (var cName in chart.groupObjs) {
                 cNotch = chart.groupObjs[cName];
@@ -1289,7 +1362,9 @@ export default function makeDistroChart(settings) {
                     chart.notchBoxes.reset()
                 }
             } else {
-                opts = {show: true};
+                opts = {
+                    show: true
+                };
             }
             chart.notchBoxes.change(opts)
         };
@@ -1300,7 +1375,9 @@ export default function makeDistroChart(settings) {
                     chart.notchBoxes.reset()
                 }
             } else {
-                opts = {show: false};
+                opts = {
+                    show: false
+                };
             }
             chart.notchBoxes.change(opts)
         };
@@ -1369,7 +1446,7 @@ export default function makeDistroChart(settings) {
                 chart.notchBoxes.colorFunct = chart.colorFunct
             }
 
-            if (nOpts.show == false) {
+            if (nOpts.show === false) {
                 return
             }
 
@@ -1431,7 +1508,7 @@ export default function makeDistroChart(settings) {
             showPlot: false,
             plotType: 'none',
             pointSize: 7,
-            showLines: false,//['median'],
+            showLines: false, //['median'],
             showBeanLines: false,
             beanWidth: 20,
             colors: null
@@ -1479,7 +1556,9 @@ export default function makeDistroChart(settings) {
                     chart.dataPlots.reset()
                 }
             } else {
-                opts = {show: true};
+                opts = {
+                    show: true
+                };
             }
             chart.dataPlots.change(opts)
         };
@@ -1490,7 +1569,9 @@ export default function makeDistroChart(settings) {
                     chart.dataPlots.reset()
                 }
             } else {
-                opts = {show: false};
+                opts = {
+                    show: false
+                };
             }
             chart.dataPlots.change(opts)
         };
@@ -1521,7 +1602,7 @@ export default function makeDistroChart(settings) {
                 cPlot = cGroup.dataPlots;
 
                 if (cPlot.objs.points) {
-                    if (dOpts.plotType == 'beeswarm') {
+                    if (dOpts.plotType === 'beeswarm') {
                         var swarmBounds = getObjWidth(100, cName);
                         var yPtScale = chart.yScale.copy()
                             .range([Math.floor(chart.yScale.range()[0] / dOpts.pointSize), 0])
@@ -1554,9 +1635,9 @@ export default function makeDistroChart(settings) {
                         var plotBounds = null,
                             scatterWidth = 0,
                             width = 0;
-                        if (dOpts.plotType == 'scatter' || typeof dOpts.plotType == 'number') {
+                        if (dOpts.plotType === 'scatter' || typeof dOpts.plotType === 'number') {
                             //Default scatter percentage is 20% of box width
-                            scatterWidth = typeof dOpts.plotType == 'number' ? dOpts.plotType : 20;
+                            scatterWidth = typeof dOpts.plotType === 'number' ? dOpts.plotType : 20;
                         }
 
                         plotBounds = getObjWidth(scatterWidth, cName);
@@ -1589,14 +1670,14 @@ export default function makeDistroChart(settings) {
          */
         chart.dataPlots.preparePlots = function () {
             var cName, cPlot;
-            
+
             if (dOpts && dOpts.colors) {
                 chart.dataPlots.colorFunct = getColorFunct(dOpts.colors);
             } else {
                 chart.dataPlots.colorFunct = chart.colorFunct
             }
 
-            if (dOpts.show == false) {
+            if (dOpts.show === false) {
                 return
             }
 
@@ -1635,7 +1716,10 @@ export default function makeDistroChart(settings) {
                 cPlot.objs.g = chart.groupObjs[cName].g.append("g").attr("class", "data-plot");
                 // Points Plot
                 if (dOpts.showPlot) {
-                    cPlot.objs.points = {g: null, pts: []};
+                    cPlot.objs.points = {
+                        g: null,
+                        pts: []
+                    };
                     cPlot.objs.points.g = cPlot.objs.g.append("g").attr("class", "points-plot");
                     for (var pt = 0; pt < chart.groupObjs[cName].values.length; pt++) {
                         let val = chart.groupObjs[cName].values[pt];
@@ -1643,14 +1727,16 @@ export default function makeDistroChart(settings) {
                         cPlot.objs.points.pts.push(cPlot.objs.points.g.append("circle")
                             .attr("class", "point")
                             //class id so it can be selected
-                            .attr('class', function() { var id = chart.settings.id ? chart.settings.id : false;
-                            return id ? 'distro-' + valInfo.id : '';})
-                            .attr('r', dOpts.pointSize / 2)// Options is diameter, r takes radius so divide by 2
+                            .attr('class', function () {
+                                var id = chart.settings.id ? chart.settings.id : false;
+                                return id ? 'distro-' + valInfo.id : '';
+                            })
+                            .attr('r', dOpts.pointSize / 2) // Options is diameter, r takes radius so divide by 2
                             .style("fill", chart.dataPlots.colorFunct(cName))
                             .style("fill-opacity", 0.6)
                             .style("stroke", chart.dataPlots.colorFunct(cName))
                             .style("stroke-width", "2px")
-                            .on('mouseover', ()=>{
+                            .on('mouseover', () => {
                                 chart.objs.tooltip
                                     .style("display", null)
                                     .style("left", (d3.event.pageX) + "px")
@@ -1658,7 +1744,7 @@ export default function makeDistroChart(settings) {
                             }).on("mouseout", function () {
                                 chart.objs.tooltip.style("display", "none");
                             }).on("mousemove", tooltipHover(cName, chart.groupObjs[cName].metrics, valInfo.idName, val))
-                            .on('click', function(){
+                            .on('click', function () {
                                 if (chart.settings.events.onClickElement) {
                                     chart.settings.events.onClickElement.call(this, valInfo);
                                 }
@@ -1669,7 +1755,10 @@ export default function makeDistroChart(settings) {
 
                 // Bean lines
                 if (dOpts.showBeanLines) {
-                    cPlot.objs.bean = {g: null, lines: []};
+                    cPlot.objs.bean = {
+                        g: null,
+                        lines: []
+                    };
                     cPlot.objs.bean.g = cPlot.objs.g.append("g").attr("class", "bean-plot");
                     for (var pt = 0; pt < chart.groupObjs[cName].values.length; pt++) {
                         cPlot.objs.bean.lines.push(cPlot.objs.bean.g.append("line")
